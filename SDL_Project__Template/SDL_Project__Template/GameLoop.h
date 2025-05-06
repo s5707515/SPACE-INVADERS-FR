@@ -8,9 +8,9 @@ private:
 
 	//WINDOW DIMENSIONS
 
-	int SCREEN_WIDTH = 1080;
+	int SCREEN_WIDTH = 600;
 
-	int SCREEN_HEIGHT = 720;
+	int SCREEN_HEIGHT = 800;
 
 	//SDL STUFF
 

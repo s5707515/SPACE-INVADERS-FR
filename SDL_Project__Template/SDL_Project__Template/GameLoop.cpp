@@ -85,7 +85,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	bool quit = false;
 
-	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, 100, 80, 80);
+	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, 650, 80, 80);
 
 	while (!quit)
 	{
@@ -110,6 +110,13 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		SDL_RenderClear(renderer);
 
+		//MOVE SPRITES
+
+		player->Move();
+
+
+
+		//DRAW SPRITES
 
 		player->DrawSprite();
 

@@ -5,6 +5,7 @@
 
 class Sprite
 {
+
 protected:
 
 	SDL_Texture* image;
