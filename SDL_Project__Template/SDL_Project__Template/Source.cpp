@@ -1,12 +1,23 @@
 #include <SDL.h>
 #include <iostream>
 
-
+#include "time.h"
 #include "GameLoop.h"
 
 int main(int argc, char* argv[])
 {
-	GameLoop* game = new GameLoop;
+
+	//WINDOW DIMENSIONS
+
+	int SCREEN_WIDTH = 600;
+
+	int SCREEN_HEIGHT = 800;
+
+
+
+	srand(time(0));
+
+	GameLoop* game = new GameLoop(SCREEN_WIDTH,SCREEN_HEIGHT);
 
 	if (game != nullptr)
 	{

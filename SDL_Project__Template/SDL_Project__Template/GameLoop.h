@@ -12,6 +12,7 @@ private:
 
 	int SCREEN_HEIGHT = 800;
 
+
 	//SDL STUFF
 
 	SDL_Window* window;
@@ -22,7 +23,7 @@ private:
 
 public:
 
-	GameLoop(); //CTOR
+	GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT); //CTOR
 	~GameLoop(); //DTOR
 
 	void PlayGame(); // Contains the actual gameloop

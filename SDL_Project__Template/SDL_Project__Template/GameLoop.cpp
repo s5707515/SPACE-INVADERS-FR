@@ -3,9 +3,14 @@
 
 #include "GameLoop.h"
 #include "Player.h"
+#include "Enemy.h"
 
-GameLoop::GameLoop() //CTOR (Automatically initialise the game)
+#include <vector>
+GameLoop::GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT) //CTOR (Automatically initialise the game)
 {
+	SCREEN_WIDTH = _SCREEN_WIDTH;
+	SCREEN_HEIGHT = _SCREEN_HEIGHT;
+
 	SetUpGame();
 }
 
@@ -85,7 +90,12 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	bool quit = false;
 
-	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, 650, 80, 80);
+	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT-100, 80, 80);
+
+	int x = rand() % SCREEN_WIDTH + 1;
+
+	Enemy* enemy = new Enemy(renderer, (char*)"Squid.bmp", x, 0, 66, 48,1);
+
 
 	while (!quit)
 	{
@@ -114,11 +124,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		player->Move();
 
+		enemy->MoveEnemy();
 
 
 		//DRAW SPRITES
 
 		player->DrawSprite();
+
+		enemy->DrawSprite();
 
 		//Present Render each Frame
 
