@@ -4,6 +4,7 @@
 #include "GameLoop.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "GameManager.h"
 
 #include <vector>
 GameLoop::GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT) //CTOR (Automatically initialise the game)
@@ -90,11 +91,19 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	bool quit = false;
 
-	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT-100, 80, 80);
+	GameManager gameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	int x = rand() % SCREEN_WIDTH + 1;
+	std::vector<Enemy*> enemies;
 
-	Enemy* enemy = new Enemy(renderer, (char*)"Squid.bmp", x, 0, 66, 48,1);
+	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT - 100, 80, 80);
+
+	//int x = rand() % SCREEN_WIDTH + 1;
+
+	//Enemy* enemy = new Enemy(renderer, (char*)"Squid.bmp", x, 0, 66, 48, 1);
+	for (int i = 0; i < 5; i++)
+	{
+		gameManager.CreateEnemy(renderer, enemies);
+	}
 
 
 	while (!quit)
@@ -116,22 +125,68 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		//FRAME BY FRAME STUFF
 
+		//FRAME LIMITING
+
+		while (!SDL_TICKS_PASSED(SDL_GetTicks(), ticksCount + 16)); //wait 16MS (60FBS)
+
+		//Calc deltatime in seconds
+
+		float deltaTime = (SDL_GetTicks() - ticksCount) / 1000.0f;
+
+		//Update tick count for next frame
+
+		ticksCount = SDL_GetTicks();
+
+		//Clamp deltatime (prevent framedrops)
+
+		if (deltaTime > 0.05f)
+		{
+			deltaTime = 0.05f;
+		}
+
+		
+		//MOVE SPRITES
+
+		player->Move(deltaTime);
+
+
+
+
+		//UPDATE ENEMIES
+
+
+		gameManager.UpdateEnemies(enemies, deltaTime);
+
+
+		//CHECK IF PLAYER COLLIDED WITH ENEMIES
+
+		for (int i = 0; i < enemies.size(); i++)
+		{
+			if (player->CheckCollision(enemies[i]))
+			{
+				std::cout << "Enemy collided with player. " << std::endl;
+
+				enemies.erase(enemies.begin() + i);
+			}
+		}
+		
+
 		//Clear Old Render
 
 		SDL_RenderClear(renderer);
-
-		//MOVE SPRITES
-
-		player->Move();
-
-		enemy->MoveEnemy();
 
 
 		//DRAW SPRITES
 
 		player->DrawSprite();
 
-		enemy->DrawSprite();
+		for (unsigned int i = 0; i < enemies.size(); i++)
+		{
+
+			enemies[i]->DrawSprite();
+
+		}
+
 
 		//Present Render each Frame
 
@@ -143,3 +198,4 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 
 }
+

@@ -6,8 +6,8 @@ Enemy :: Enemy(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int
 
 } //CTOR
 
-void Enemy::MoveEnemy() //Move enemy down the screen
+void Enemy::MoveEnemy(float _deltaTime) //Move enemy down the screen
 {
-	position.y += speed;
+	truePos.y += speed * _deltaTime * 10;
 }
 

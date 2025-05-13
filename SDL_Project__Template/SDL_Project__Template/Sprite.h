@@ -14,6 +14,8 @@ protected:
 
 	SDL_Renderer* renderer; //The renderer the sprites are drawn to
 
+	SDL_FPoint truePos; //The position used for deltaTime (used since you can't render to float values)
+
 public:
 
 	Sprite(SDL_Renderer* _renderer, char* imageFile, int _x, int _y, int _w, int _h); //CTOR
@@ -34,5 +36,7 @@ public:
 
 
 	void DrawSprite();
+
+	bool CheckCollision(Sprite* _other);
 
 };

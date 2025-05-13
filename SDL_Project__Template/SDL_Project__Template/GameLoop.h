@@ -21,6 +21,11 @@ private:
 	bool SetUpGame(); //set up SDL Window, Renderer
 	void EndGame(); //Clean up SDL
 
+
+	//TIME
+
+	Uint32 ticksCount;
+
 public:
 
 	GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT); //CTOR

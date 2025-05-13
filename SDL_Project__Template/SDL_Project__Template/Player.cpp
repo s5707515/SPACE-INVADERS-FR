@@ -4,25 +4,25 @@ Player::Player(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int
 
 //DONT NEED DTOR AS INHERIT SPRITE 
 
-void Player::Move()
+void Player::Move(float _deltaTime)
 {
 	//GET KEYBOARD
 
 	const Uint8* key = SDL_GetKeyboardState(NULL);
 
-	if (position.x + position.w < rightBorderPos)
+	if (truePos.x + position.w < rightBorderPos)
 	{
 		if (key[SDL_SCANCODE_RIGHT] || key[SDL_SCANCODE_D])
 		{
-			position.x += speed;
+			truePos.x += speed * _deltaTime * 10;
 		}
 	}
 	
-	if (position.x > leftBorderPos)
+	if (truePos.x > leftBorderPos)
 	{
 		if (key[SDL_SCANCODE_LEFT] || key[SDL_SCANCODE_A])
 		{
-			position.x -= speed;
+			truePos.x -= speed * _deltaTime * 10;
 		}
 	}
 

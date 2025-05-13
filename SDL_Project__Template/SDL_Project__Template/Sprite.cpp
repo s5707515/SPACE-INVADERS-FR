@@ -12,6 +12,10 @@ Sprite::Sprite(SDL_Renderer* _renderer, char* _imageFile, int _x, int _y, int _w
 	position.w = _w;
 	position.h = _h;
 
+
+	truePos.x = _x;
+	truePos.y = _y;
+
 	SDL_Surface* file = SDL_LoadBMP(_imageFile);
 
 	if (file == nullptr)
@@ -43,5 +47,13 @@ Sprite::~Sprite()
 
 void Sprite::DrawSprite() //Draw sprite on the screen 
 {
+	position.x = static_cast<int>(truePos.x);
+	position.y = static_cast<int>(truePos.y);
+
 	SDL_RenderCopy(renderer, image, NULL, &position);
+}
+
+bool Sprite::CheckCollision(Sprite* other)
+{
+	return SDL_HasIntersection(&position, &other->GetPosition());
 }

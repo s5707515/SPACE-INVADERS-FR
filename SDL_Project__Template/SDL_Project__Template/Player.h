@@ -9,7 +9,7 @@ class Player : public Sprite
 
 private:
 
-	int speed = 5;
+	int speed = 50;
 
 	int leftBorderPos = 0;
 
@@ -19,6 +19,6 @@ public:
 
 	Player(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h);
 
-	void Move();
+	void Move(float _deltaTime);
 
 };
