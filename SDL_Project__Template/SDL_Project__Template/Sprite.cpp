@@ -53,7 +53,7 @@ void Sprite::DrawSprite() //Draw sprite on the screen
 	SDL_RenderCopy(renderer, image, NULL, &position);
 }
 
-bool Sprite::CheckCollision(Sprite* other)
+bool Sprite::CheckCollision(SDL_Rect _other)
 {
-	return SDL_HasIntersection(&position, &other->GetPosition());
+	return SDL_HasIntersection(&position, &_other);
 }

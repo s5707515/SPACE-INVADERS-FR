@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 #include "Enemy.h"
+#include "Projectile.h"
 
 #include <vector>
 
@@ -14,14 +15,19 @@ private:
 
 	int SCREEN_HEIGHT;
 
+
 public:
 
 	GameManager(int _screenW, int _screenH) { SCREEN_WIDTH = _screenW; SCREEN_HEIGHT = _screenH; }//CTOR
 
 	void CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies);
 
+
 	void UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime);
 
+	void CreateProjectile(SDL_Renderer* renderer, std::vector<Projectile*>& _projectiles, Projectile::Team team, SDL_Point _spawnPos);
+
+	void UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime);
 	
 
 };

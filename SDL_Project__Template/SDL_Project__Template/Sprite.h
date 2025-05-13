@@ -3,10 +3,20 @@
 
 #include <SDL.h>
 
+
 class Sprite
 {
 
 protected:
+
+	enum Tag {
+
+		PLAYER,
+
+		ENEMY,
+
+		PROJECTILE
+	};
 
 	SDL_Texture* image;
 
@@ -37,6 +47,6 @@ public:
 
 	void DrawSprite();
 
-	bool CheckCollision(Sprite* _other);
+	bool CheckCollision(SDL_Rect _other);
 
 };

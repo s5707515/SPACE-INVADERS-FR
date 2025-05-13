@@ -3,8 +3,7 @@
 
 #include "GameLoop.h"
 #include "Player.h"
-#include "Enemy.h"
-#include "GameManager.h"
+#include "GameManager.h" //Enemy.h and Projectile.h are included in this
 
 #include <vector>
 GameLoop::GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT) //CTOR (Automatically initialise the game)
@@ -93,17 +92,26 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	GameManager gameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+	GameManager* gmPtr{ nullptr };
+
+	gmPtr = &gameManager;
+
+	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT - 100, 80, 80, gmPtr);
+
+	//CREATE VECTORS TO HOLD MULTIPLE OBJECTS
+
 	std::vector<Enemy*> enemies;
+	std::vector<Projectile*> projectiles;
 
-	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT - 100, 80, 80);
+	float enemyTimer = 0.0f;
 
-	//int x = rand() % SCREEN_WIDTH + 1;
+	float enemySpawnRate = 2.5f;
 
-	//Enemy* enemy = new Enemy(renderer, (char*)"Squid.bmp", x, 0, 66, 48, 1);
-	for (int i = 0; i < 5; i++)
-	{
-		gameManager.CreateEnemy(renderer, enemies);
-	}
+	float fireRate = 0.5f;
+
+	float shotCoolDown = fireRate; //Allow player to shoot straight away
+
+	
 
 
 	while (!quit)
@@ -144,10 +152,44 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			deltaTime = 0.05f;
 		}
 
+
+
+
+
+		//SPAWN ENEMIES
+
+		if (enemyTimer >= enemySpawnRate)
+		{
+			gameManager.CreateEnemy(renderer, enemies);
+
+			enemyTimer -= enemySpawnRate;
+		}
+		else
+		{
+			enemyTimer += deltaTime;
+		}
+
+		
 		
 		//MOVE SPRITES
 
 		player->Move(deltaTime);
+
+
+		//Let player shoot
+
+		if (shotCoolDown > fireRate)
+		{
+			player->Shoot(projectiles);
+
+			shotCoolDown -= fireRate;
+		}
+		else
+		{
+			shotCoolDown += deltaTime;
+		}
+
+		
 
 
 
@@ -157,16 +199,43 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		gameManager.UpdateEnemies(enemies, deltaTime);
 
+		gameManager.UpdateProjectiles(projectiles, deltaTime);
+
+		//MANAGE COLLISIONS
 
 		//CHECK IF PLAYER COLLIDED WITH ENEMIES
 
 		for (int i = 0; i < enemies.size(); i++)
 		{
-			if (player->CheckCollision(enemies[i]))
+			if (player->CheckCollision(enemies[i]->GetPosition()))
 			{
 				std::cout << "Enemy collided with player. " << std::endl;
 
 				enemies.erase(enemies.begin() + i);
+			}
+		}
+
+		//CHECK IF PROJECTILES HIT ENEMIES
+
+		for (int i = 0; i < projectiles.size(); i++)
+		{
+			for (int j = 0; j < enemies.size(); j++)
+			{
+				if (projectiles[i]->CheckCollision(enemies[j]->GetPosition())) //Check for collision
+				{
+					//CHECK WHICH TEAM THE PROJECTILE IS ON
+
+					if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+					{
+						enemies.erase(enemies.begin() + j);
+
+						std::cout << "Enemy was shot" << std::endl;
+
+						projectiles.erase(projectiles.begin() + i);
+
+						std::cout << "Projectile collided with enemy" << std::endl;
+					}
+				}
 			}
 		}
 		
@@ -184,6 +253,13 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		{
 
 			enemies[i]->DrawSprite();
+
+		}
+
+		for (unsigned int i = 0; i < projectiles.size(); i++)
+		{
+
+			projectiles[i]->DrawSprite();
 
 		}
 

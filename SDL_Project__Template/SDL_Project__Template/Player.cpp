@@ -1,6 +1,12 @@
 #include "Player.h"
+#include <vector>
 
-Player::Player(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h) : Sprite(_renderer, _file, _x, _y, _w, _h) {} //CTOR
+
+Player::Player(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, GameManager* _gameManager) : Sprite(_renderer, _file, _x, _y, _w, _h) 
+{
+	gameManager = _gameManager;
+
+} //CTOR
 
 //DONT NEED DTOR AS INHERIT SPRITE 
 
@@ -26,4 +32,15 @@ void Player::Move(float _deltaTime)
 		}
 	}
 
+}
+
+void Player::Shoot(std::vector<Projectile*>& _projectiles)
+{
+	const Uint8* key = SDL_GetKeyboardState(NULL);
+
+	if (key[SDL_SCANCODE_SPACE])
+	{
+		SDL_Point spawnPos{ position.x + (position.w /2), position.y - (position.h / 2)}; //Spawn projectile above player
+		gameManager->CreateProjectile(renderer, _projectiles, Projectile::Team::PLAYER_TEAM, spawnPos);
+	}
 }

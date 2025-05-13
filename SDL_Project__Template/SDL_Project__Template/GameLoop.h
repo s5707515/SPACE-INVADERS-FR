@@ -26,6 +26,8 @@ private:
 
 	Uint32 ticksCount;
 
+
+
 public:
 
 	GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT); //CTOR

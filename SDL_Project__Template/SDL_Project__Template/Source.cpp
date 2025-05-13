@@ -9,9 +9,9 @@ int main(int argc, char* argv[])
 
 	//WINDOW DIMENSIONS
 
-	int SCREEN_WIDTH = 600;
+	int SCREEN_WIDTH = 800;
 
-	int SCREEN_HEIGHT = 800;
+	int SCREEN_HEIGHT = 1000;
 
 
 

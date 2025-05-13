@@ -4,7 +4,38 @@
 
 
 
+void GameManager::CreateProjectile(SDL_Renderer* renderer, std::vector<Projectile*>& _projectiles, Projectile::Team team, SDL_Point _spawnPos)
+{
+	switch (team)
+	{
+	case Projectile::Team::PLAYER_TEAM :
 
+		_projectiles.push_back(new Projectile(renderer, (char*)"Projectile1.bmp", _spawnPos.x, _spawnPos.y, 8, 32, 75, Projectile::Direction::UP, Projectile::Team::PLAYER_TEAM));
+
+		break;
+
+	default:
+
+		std::cout << "Couldn't find an applicable team for the projectile!" << std::endl;
+
+	}
+}
+
+void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime)
+{
+	for (unsigned int i = 0; i < _projectiles.size(); i++)
+	{
+		_projectiles[i]->MoveProjectile(_deltaTime);
+
+		if (_projectiles[i]->GetY() < 0 || _projectiles[i]->GetY() > SCREEN_HEIGHT)
+		{
+			std::cout << "Deleted Projectile!" << std::endl;
+
+			_projectiles.erase(_projectiles.begin() + i);
+		}
+
+	}
+}
 
 void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies)
 {
@@ -12,7 +43,33 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 
 	Enemy* newEnemy = nullptr;
 
-	int xPos = rand() % SCREEN_WIDTH + 1;
+	bool freeSpace = true;
+
+	int xPos = 0;
+
+	do
+	{
+		freeSpace = true; //Assume there is a free space to spawn enemy
+
+		xPos = rand() % (SCREEN_WIDTH - 98) + 48; //Generate xPos for spawnPoint
+
+		SDL_Rect spawnCheck = { xPos, 0,96, 40 }; //create a imaginary spawnPoint
+
+		for (int i = 0; i < _enemies.size(); i++) //Check that no enemies exist at that spawnPoint
+		{
+			if (_enemies[i]->CheckCollision(spawnCheck))
+			{
+				freeSpace = false;
+			}
+		}
+
+
+
+	} while (!freeSpace);
+
+	
+
+
 
 	switch (enemyID)
 	{
@@ -77,4 +134,6 @@ void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime)
 	}
 	*/
 }
+
+
 
