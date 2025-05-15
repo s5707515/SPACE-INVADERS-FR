@@ -64,9 +64,9 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 
 		xPos = rand() % (SCREEN_WIDTH - 98) + 48; //Generate xPos for spawnPoint
 
-		SDL_Rect spawnCheck = { xPos, 0,96, 40 }; //create a imaginary spawnPoint
+		SDL_Rect spawnCheck = { xPos, 0,96, SCREEN_HEIGHT }; 
 
-		for (int i = 0; i < _enemies.size(); i++) //Check that no enemies exist at that spawnPoint
+		for (int i = 0; i < _enemies.size(); i++) //Check that no enemies exist in this column (STOP ENEMIES OVERLAPPING)
 		{
 			if (_enemies[i]->CheckCollision(spawnCheck))
 			{
