@@ -2,11 +2,11 @@
 #include "Projectile.h"
 
 
-Projectile::Projectile(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, int _speed, Direction _dir, Team _team) : Sprite(_renderer, _file, _x, _y, _w, _h)
+Projectile::Projectile(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, int _speed, Team _team, int _damage) : Sprite(_renderer, _file, _x, _y, _w, _h)
 {
 	speed = _speed;
 
-	dir = _dir;
+	damage = _damage;
 
 	team = _team;
 }
@@ -14,15 +14,15 @@ Projectile::Projectile(SDL_Renderer* _renderer, char* _file, int _x, int _y, int
 
 void Projectile::MoveProjectile(float _deltaTime)
 {
-	switch (dir) //Move projectile based on the direction it is facing
+	switch (team) //Move projectile based on the direction it is facing
 	{
-		case UP:
+		case PLAYER_TEAM:
 
 			truePos.y -= speed * _deltaTime * 10;
 
 			break;
 
-		case DOWN:
+		case ENEMY_TEAM:
 
 			truePos.y += speed * _deltaTime * 10;
 	}

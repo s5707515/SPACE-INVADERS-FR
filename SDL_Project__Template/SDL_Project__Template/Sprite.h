@@ -45,8 +45,8 @@ public:
 	SDL_Rect& GetPosition() { return position; }
 
 
-	void DrawSprite();
+	void DrawSprite(); //Draws the sprite to the screen
 
-	bool CheckCollision(SDL_Rect _other);
+	bool CheckCollision(SDL_Rect _other); //Returns true or false based on collision
 
 };

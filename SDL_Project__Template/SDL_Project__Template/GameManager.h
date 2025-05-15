@@ -4,6 +4,7 @@
 #include "Enemy.h"
 #include "Projectile.h"
 
+
 #include <vector>
 
 
@@ -20,14 +21,14 @@ public:
 
 	GameManager(int _screenW, int _screenH) { SCREEN_WIDTH = _screenW; SCREEN_HEIGHT = _screenH; }//CTOR
 
-	void CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies);
+	void CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies); //Instantiates a new enemy (Squid / Crab / Octopus)
 
 
-	void UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime);
+	void UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime); //Moves enemies down the screen, destroying them if they hit the bottom
 
-	void CreateProjectile(SDL_Renderer* renderer, std::vector<Projectile*>& _projectiles, Projectile::Team team, SDL_Point _spawnPos);
+	void CreateProjectile(SDL_Renderer* renderer, std::vector<Projectile*>& _projectiles, Projectile::Team team, SDL_Point _spawnPos); //Instantiates a new projectile
 
-	void UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime);
+	void UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime); //Moves projectile up/down screen, destroying them if they go off screen
 	
 
 };

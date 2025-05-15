@@ -2,13 +2,21 @@
 #include <vector>
 
 
-Player::Player(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, GameManager* _gameManager) : Sprite(_renderer, _file, _x, _y, _w, _h) 
+Player::Player(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, GameManager* _gameManager, int _maxHealth) : Sprite(_renderer, _file, _x, _y, _w, _h) 
 {
 	gameManager = _gameManager;
 
+	health = new Health(_maxHealth);
+
 } //CTOR
 
-//DONT NEED DTOR AS INHERIT SPRITE 
+Player::~Player() //DTOR
+{
+	if (health != nullptr)
+	{
+		delete health;
+	}
+}
 
 void Player::Move(float _deltaTime)
 {
@@ -16,17 +24,17 @@ void Player::Move(float _deltaTime)
 
 	const Uint8* key = SDL_GetKeyboardState(NULL);
 
-	if (truePos.x + position.w < rightBorderPos)
+	if (truePos.x + position.w < rightBorderPos) //Check player is not at right edge of screen
 	{
-		if (key[SDL_SCANCODE_RIGHT] || key[SDL_SCANCODE_D])
+		if (key[SDL_SCANCODE_RIGHT] || key[SDL_SCANCODE_D]) //Move right when D or -> is pressed
 		{
 			truePos.x += speed * _deltaTime * 10;
 		}
 	}
 	
-	if (truePos.x > leftBorderPos)
+	if (truePos.x > leftBorderPos) //Check player is not at leftedge of screen
 	{
-		if (key[SDL_SCANCODE_LEFT] || key[SDL_SCANCODE_A])
+		if (key[SDL_SCANCODE_LEFT] || key[SDL_SCANCODE_A]) //Move left when a or <- is pressed
 		{
 			truePos.x -= speed * _deltaTime * 10;
 		}
@@ -34,13 +42,25 @@ void Player::Move(float _deltaTime)
 
 }
 
-void Player::Shoot(std::vector<Projectile*>& _projectiles)
+void Player::Shoot(std::vector<Projectile*>& _projectiles, float _deltaTime) //Fire projectile
 {
 	const Uint8* key = SDL_GetKeyboardState(NULL);
 
+	shotCoolDown += _deltaTime; //Increment cooldown
+
 	if (key[SDL_SCANCODE_SPACE])
 	{
-		SDL_Point spawnPos{ position.x + (position.w /2), position.y - (position.h / 2)}; //Spawn projectile above player
-		gameManager->CreateProjectile(renderer, _projectiles, Projectile::Team::PLAYER_TEAM, spawnPos);
+
+		if (shotCoolDown > fireRate)
+		{
+			SDL_Point spawnPos{ position.x + (position.w / 2), position.y - (position.h / 2) }; //Set spawnpoint of projectile to above player
+			gameManager->CreateProjectile(renderer, _projectiles, Projectile::Team::PLAYER_TEAM, spawnPos); //Get GameManager to spawn projectile
+
+			shotCoolDown = 0;
+		}
+		
 	}
+
+	
 }
+

@@ -96,20 +96,24 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	gmPtr = &gameManager;
 
-	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT - 100, 80, 80, gmPtr);
+	Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT - 100, 80, 80, gmPtr, 3);
 
 	//CREATE VECTORS TO HOLD MULTIPLE OBJECTS
 
 	std::vector<Enemy*> enemies;
 	std::vector<Projectile*> projectiles;
 
+
+
 	float enemyTimer = 0.0f;
 
 	float enemySpawnRate = 2.5f;
 
-	float fireRate = 0.5f;
+	float enemyCooldown = 0.0f;
 
-	float shotCoolDown = fireRate; //Allow player to shoot straight away
+	float enemyFireRate = 5.0f; 
+
+	
 
 	
 
@@ -131,8 +135,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			}
 		}
 
-		//FRAME BY FRAME STUFF
-
+	
 		//FRAME LIMITING
 
 		while (!SDL_TICKS_PASSED(SDL_GetTicks(), ticksCount + 16)); //wait 16MS (60FBS)
@@ -169,6 +172,28 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			enemyTimer += deltaTime;
 		}
 
+		//SPAWN ENEMY PROJECTILE
+
+		if (enemies.size() != 0)
+		{
+			if (enemyCooldown > enemyFireRate)
+			{
+				int randEnemy = rand() % enemies.size();
+
+				SDL_Rect position = enemies[randEnemy]->GetPosition();
+
+				SDL_Point spawnPos{ position.x + (position.w / 2), position.y + (position.h / 2)};
+				gameManager.CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
+
+				enemyCooldown = 0;
+
+				enemyFireRate = (rand() % 4) + 1;
+				
+			}
+		}
+
+		enemyCooldown += deltaTime;
+
 		
 		
 		//MOVE SPRITES
@@ -177,19 +202,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 
 		//Let player shoot
-
-		if (shotCoolDown > fireRate)
-		{
-			player->Shoot(projectiles);
-
-			shotCoolDown -= fireRate;
-		}
-		else
-		{
-			shotCoolDown += deltaTime;
-		}
-
 		
+		player->Shoot(projectiles, deltaTime);
 
 
 
@@ -201,9 +215,10 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		gameManager.UpdateProjectiles(projectiles, deltaTime);
 
-		//MANAGE COLLISIONS
+		//MANAGE COLLISIONS:
 
-		//CHECK IF PLAYER COLLIDED WITH ENEMIES
+
+		//Check if player collided with enemies
 
 		for (int i = 0; i < enemies.size(); i++)
 		{
@@ -212,32 +227,75 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				std::cout << "Enemy collided with player. " << std::endl;
 
 				enemies.erase(enemies.begin() + i);
+
+				player->health->TakeDamage(1);
+
+				std::cout << "Player Health: " << player->health->GetCurrentHealth() << std::endl;
+
 			}
 		}
 
-		//CHECK IF PROJECTILES HIT ENEMIES
+		//Check if player collided with enemy projectile
 
 		for (int i = 0; i < projectiles.size(); i++)
 		{
-			for (int j = 0; j < enemies.size(); j++)
+			if (projectiles[i]->CheckCollision(player->GetPosition()))
 			{
-				if (projectiles[i]->CheckCollision(enemies[j]->GetPosition())) //Check for collision
+				if (projectiles[i]->GetTeam() == Projectile::Team::ENEMY_TEAM)
+				{
+					//Damage Player
+
+					player->health->TakeDamage(projectiles[i]->GetDamage());
+
+
+					//Destroy projectile
+
+					projectiles.erase(projectiles.begin() + i);
+
+					std::cout << "Projectile collided with player" << std::endl;
+				}
+			}
+		}
+
+
+		//Check if projectiles collided with enemies
+
+		for (int i = 0; i < enemies.size(); i++)
+		{
+			for (int j = 0; j < projectiles.size(); j++)
+			{
+				if (projectiles[j]->CheckCollision(enemies[i]->GetPosition())) //Check for collision
 				{
 					//CHECK WHICH TEAM THE PROJECTILE IS ON
 
-					if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+					if (projectiles[j]->GetTeam() == Projectile::Team::PLAYER_TEAM)
 					{
-						enemies.erase(enemies.begin() + j);
 
-						std::cout << "Enemy was shot" << std::endl;
+						//Damage Enemy
 
-						projectiles.erase(projectiles.begin() + i);
+						enemies[i]->health->TakeDamage(projectiles[j]->GetDamage());
+
+						//Destroy projectile
+
+						projectiles.erase(projectiles.begin() + j);
 
 						std::cout << "Projectile collided with enemy" << std::endl;
+
 					}
 				}
 			}
 		}
+
+		//DESTROY DEAD ENEMIES (enemies cant be destroyed in nested loop as will cause range errors)
+
+		for (int i = 0; i < enemies.size(); i++)
+		{
+			if (!enemies[i]->health->IsAlive())
+			{
+				enemies.erase(enemies.begin() + i);
+			}
+		}
+
 		
 
 		//Clear Old Render
@@ -246,8 +304,12 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 
 		//DRAW SPRITES
-
+		
+		
 		player->DrawSprite();
+		
+
+		
 
 		for (unsigned int i = 0; i < enemies.size(); i++)
 		{
@@ -267,6 +329,13 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		//Present Render each Frame
 
 		SDL_RenderPresent(renderer);
+
+		//Check for quit
+
+		if (!player->health->IsAlive())
+		{
+			quit = true;
+		}
 	}
 
 	delete player;

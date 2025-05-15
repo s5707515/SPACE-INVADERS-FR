@@ -8,14 +8,8 @@ class Projectile : public Sprite
 
 public:
 
-	enum Direction //Used to specify the direction the projectile is travelling
-	{
-		UP,
 
-		DOWN
-	};
-
-	enum Team //Used to work out what objects the projectile can damage
+	enum Team //Used to work out what objects the projectile can damage and what direction the object is shot
 	{
 		PLAYER_TEAM,
 
@@ -23,17 +17,19 @@ public:
 	};
 
 
-	Team GetTeam() { return team; }
+	Team GetTeam() { return team; } //Return the "team" the projectile is on (Controls what GameObjects it can hurt)
 
-	Projectile(SDL_Renderer* _renderer, char* file, int _x, int _y, int _w, int _h, int _speed, Direction _dir, Team _team);
+	int GetDamage() { return damage; } //Returns damage
 
-	void MoveProjectile(float _deltaTime);
+	Projectile(SDL_Renderer* _renderer, char* file, int _x, int _y, int _w, int _h, int _speed, Team _team, int _damage); //CTOR
+
+	void MoveProjectile(float _deltaTime); //Moves the projectile up/down the screen 
 
 private:
 
 	int speed;
 
-	Direction dir;
+	int damage;
 
 	Team team;
 

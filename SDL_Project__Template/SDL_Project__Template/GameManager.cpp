@@ -2,26 +2,37 @@
 #include "GameManager.h"
 #include <iostream>
 
+//Basically tidies up the GameLoop function.
 
 
 void GameManager::CreateProjectile(SDL_Renderer* renderer, std::vector<Projectile*>& _projectiles, Projectile::Team team, SDL_Point _spawnPos)
 {
+	//SPAWN PROJECTILES WITH DIFFERENT ATTRIBUTES BASED ON TEAM
+
 	switch (team)
 	{
-	case Projectile::Team::PLAYER_TEAM :
+		case Projectile::Team::PLAYER_TEAM :
 
-		_projectiles.push_back(new Projectile(renderer, (char*)"Projectile1.bmp", _spawnPos.x, _spawnPos.y, 8, 32, 75, Projectile::Direction::UP, Projectile::Team::PLAYER_TEAM));
+			_projectiles.push_back(new Projectile(renderer, (char*)"Projectile1.bmp", _spawnPos.x, _spawnPos.y, 8, 32, 75, Projectile::Team::PLAYER_TEAM,1));
 
-		break;
+			break;
 
-	default:
+		case Projectile::Team::ENEMY_TEAM:
 
-		std::cout << "Couldn't find an applicable team for the projectile!" << std::endl;
+			_projectiles.push_back(new Projectile(renderer, (char*)"Projectile2.bmp", _spawnPos.x, _spawnPos.y, 24, 24, 75, Projectile::Team::ENEMY_TEAM, 1));
+
+			break;
+
+
+
+		default:
+
+			std::cout << "Couldn't find an applicable team for the projectile!" << std::endl;
 
 	}
 }
 
-void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime)
+void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime) //Move projectiles and destroy once offscreen
 {
 	for (unsigned int i = 0; i < _projectiles.size(); i++)
 	{
@@ -37,7 +48,7 @@ void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, floa
 	}
 }
 
-void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies)
+void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies) //Spawn a random enemy
 {
 	int enemyID = rand() % 3;
 
@@ -76,29 +87,28 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 	case 0:
 		//SPAWN SQUID
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, 0, 64, 64, 40));
+		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, 0, 64, 64, 40,2));
 
 		break;
 
 	case 1:
 		//SPAWN CRAB
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, 0, 88, 64, 30));
+		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, 0, 88, 64, 25,3));
 
 		break;
-
 
 	case 2:
 		//SPAWN OCTOPUS
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, 0, 96, 64, 20));
+		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, 0, 96, 64, 15,4));
 
 		break;
 	}
 
 }
 
-void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime)
+void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime) //Move enemies and destroy once offscreen
 {
 	for (unsigned int i = 0; i < _enemies.size(); i++)
 	{
@@ -114,25 +124,6 @@ void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime)
 		}
 
 	}
-
-	/*std::vector<Enemy*>::iterator itr;
-	for (itr = _enemies.begin(); itr != _enemies.end(); )
-	{
-		(*itr)->MoveEnemy();
-
-		if ((*itr)->GetY() > SCREEN_HEIGHT)
-		{
-			std::cout << "Deleted enemy: " << *itr << std::endl;
-
-			itr = _enemies.erase(itr);
-		}
-		else
-		{
-			itr++;
-		}
-
-	}
-	*/
 }
 
 
