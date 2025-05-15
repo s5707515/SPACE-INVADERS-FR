@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sdl.h>
+#include <SDL_ttf.h>
 
 class GameLoop
 {
@@ -25,6 +26,10 @@ private:
 	//TIME
 
 	Uint32 ticksCount;
+
+	//TEXT TTF STUFF
+
+	TTF_Font* font{ nullptr };
 
 
 

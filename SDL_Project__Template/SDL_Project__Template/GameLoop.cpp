@@ -1,9 +1,16 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <iostream>
 
+
+
+#include <string>
+
 #include "GameLoop.h"
+
 #include "Player.h"
 #include "GameManager.h" //Enemy.h and Projectile.h are included in this
+#include "UI.h"
 
 #include <vector>
 GameLoop::GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT) //CTOR (Automatically initialise the game)
@@ -60,7 +67,26 @@ bool GameLoop::SetUpGame()
 				success = false;
 			}
 
+		}
+	}
 
+
+	//INITIALISE TTF
+
+	if (TTF_Init() < 0)
+	{
+		std::cout << "SDL_ttf could not be initialised! SDL Error: " << SDL_GetError() << std::endl;
+
+		system("pause");
+		success = false;
+	}
+	else  
+	{
+		font = TTF_OpenFont("PixelifySans-Bold.ttf", 50);
+
+		if (!font)
+		{
+			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
 		}
 	}
 
@@ -69,6 +95,11 @@ bool GameLoop::SetUpGame()
 
 void GameLoop::EndGame()
 {
+
+	//CLOSE FONTS
+
+	TTF_CloseFont(font);
+
 	//DESTROY RENDERER
 
 	SDL_DestroyRenderer(renderer);
@@ -77,7 +108,9 @@ void GameLoop::EndGame()
 
 	SDL_DestroyWindow(window);
 
-	//QUIT SDL LIBRARY
+	//QUIT SDL LIBRARIES
+
+	TTF_Quit();
 
 	SDL_Quit();
 
@@ -102,6 +135,16 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	std::vector<Enemy*> enemies;
 	std::vector<Projectile*> projectiles;
+
+	//CREATE TEXTBOXS
+	
+	SDL_Color white = { 255,255,255 };
+
+	SDL_Rect healthTextPos{10, 10, 0, 0};
+	TextBox* healthText = new TextBox(font, (char*)"Health: 0", white, healthTextPos, renderer);
+
+	SDL_Rect scoreTextPos{ SCREEN_WIDTH - 300, 10, 0, 0 };
+	TextBox* scoreText = new TextBox(font, (char*)"Score: 0", white, scoreTextPos, renderer);
 
 
 
@@ -281,6 +324,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						std::cout << "Projectile collided with enemy" << std::endl;
 
+						
+
 					}
 				}
 			}
@@ -293,9 +338,23 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			if (!enemies[i]->health->IsAlive())
 			{
 				enemies.erase(enemies.begin() + i);
+
+				//Add score
+
+				gameManager.IncrementScore(10);
 			}
 		}
 
+
+		//UPDATE TEXTBOXES
+
+	
+		std::string healthTxt = "Health: " + std::to_string(player->health->GetCurrentHealth());
+		healthText->ChangeText((char*)healthTxt.c_str());
+
+
+		std::string scoreTxt = "Score: " + std::to_string(gameManager.GetScore());
+		scoreText->ChangeText((char*)scoreTxt.c_str());
 		
 
 		//Clear Old Render
@@ -324,6 +383,11 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			projectiles[i]->DrawSprite();
 
 		}
+
+		//DRAW TEXT
+
+		healthText->DrawText();
+		scoreText->DrawText();
 
 
 		//Present Render each Frame

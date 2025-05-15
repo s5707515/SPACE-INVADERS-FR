@@ -1,0 +1,56 @@
+
+#include "UI.h"
+
+#include <iostream>
+
+TextBox::TextBox(TTF_Font* _font, char* _text, SDL_Color _colour, SDL_Rect pos, SDL_Renderer* _renderer)
+{
+
+	//Set variables
+	font = _font;
+
+	colour = _colour;
+
+	position = pos;
+
+
+	renderer = _renderer;
+
+	ChangeText(_text);
+	
+}
+
+void TextBox::ChangeText(char* _newText)
+{
+	text = _newText;
+
+	SDL_Surface* txtSurface{ nullptr };
+
+	txtSurface = TTF_RenderText_Solid(font, text, colour);
+
+	if (!txtSurface)
+	{
+		std::cout << "Failed to render text: " << TTF_GetError() << std::endl;
+	}
+	else
+	{
+		position.w = txtSurface->w;
+		position.h = txtSurface->h;
+
+		textTexture = SDL_CreateTextureFromSurface(renderer, txtSurface);
+
+		if (textTexture == 0)
+		{
+			std::cout << "Failed to create texture from surface: " << SDL_GetError() << std::endl;
+		}
+
+	}
+
+	
+}
+
+
+void TextBox::DrawText()
+{
+	SDL_RenderCopy(renderer, textTexture, NULL, &position);
+}

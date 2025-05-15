@@ -1,7 +1,7 @@
 #pragma once
 
 
-struct Health
+class Health
 {
 private:
 

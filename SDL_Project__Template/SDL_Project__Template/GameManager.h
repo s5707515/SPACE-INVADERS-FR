@@ -16,6 +16,8 @@ private:
 
 	int SCREEN_HEIGHT;
 
+	int score = 0;
+
 
 public:
 
@@ -30,6 +32,9 @@ public:
 
 	void UpdateProjectiles(std::vector<Projectile*>& _projectiles, float _deltaTime); //Moves projectile up/down screen, destroying them if they go off screen
 	
+	int GetScore(){ return score; }
+
+	void IncrementScore(int _points);
 
 };
 

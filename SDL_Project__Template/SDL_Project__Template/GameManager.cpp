@@ -126,5 +126,9 @@ void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime)
 	}
 }
 
+void GameManager::IncrementScore(int _points)
+{
+	score += _points;
+}
 
 

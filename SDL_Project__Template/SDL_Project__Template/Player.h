@@ -13,7 +13,7 @@ class Player : public Sprite
 
 private:
 
-	int speed = 50;
+	int speed = 70;
 
 	int leftBorderPos = 0;
 
