@@ -23,6 +23,8 @@ public:
 
 	GameManager(int _screenW, int _screenH) { SCREEN_WIDTH = _screenW; SCREEN_HEIGHT = _screenH; }//CTOR
 
+	~GameManager() {}; //DTOR
+
 	void CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, Wave* &_wave); //Instantiates a new enemy (Squid / Crab / Octopus)
 
 

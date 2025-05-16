@@ -16,6 +16,7 @@ private:
 public:
 
 	Health(int _maxHealth); //CTOR
+	~Health() {}; //DTOR
 
 	int GetCurrentHealth() { return currentHealth; }
 	

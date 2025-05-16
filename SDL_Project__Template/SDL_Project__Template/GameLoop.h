@@ -1,7 +1,19 @@
 #pragma once
 
 #include <sdl.h>
-#include <SDL_ttf.h>
+#include <SDL_ttf.h>#
+
+enum Phase
+{
+	REGULAR_WAVE,
+
+	BOSS_WAVE,
+
+	VICTORY,
+
+	DEFEAT
+
+};
 
 class GameLoop
 {
@@ -30,6 +42,10 @@ private:
 	//TEXT TTF STUFF
 
 	TTF_Font* font{ nullptr };
+
+	//PHASE
+
+	Phase phase;
 
 
 

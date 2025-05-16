@@ -9,15 +9,6 @@ class Sprite
 
 protected:
 
-	enum Tag {
-
-		PLAYER,
-
-		ENEMY,
-
-		PROJECTILE
-	};
-
 	SDL_Texture* image;
 
 	SDL_Rect position; //The images proportions

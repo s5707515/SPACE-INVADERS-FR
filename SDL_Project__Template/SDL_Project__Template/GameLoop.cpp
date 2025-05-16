@@ -12,6 +12,8 @@
 #include "GameManager.h" //Enemy.h and Projectile.h are included in this
 #include "UI.h"
 
+#include "Boss.h"
+
 #include <vector>
 GameLoop::GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT) //CTOR (Automatically initialise the game)
 {
@@ -123,6 +125,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	bool quit = false;
 
+	phase = REGULAR_WAVE;
+
 	GameManager gameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	GameManager* gmPtr{ nullptr };
@@ -135,6 +139,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	std::vector<Enemy*> enemies;
 	std::vector<Projectile*> projectiles;
+	std::vector<Boss*> bosses; //(Theres only ever one)
 
 	//CREATE TEXTBOXS
 	
@@ -153,7 +158,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	TextBox* enemiesText = new TextBox(font, (char*)"Enemies Left: 0", white, enemiesLeftPos, renderer);
 
 
-	SDL_Rect waveTextPos{ SCREEN_WIDTH - 200, 10, 0, 0 };
+	SDL_Rect waveTextPos{ SCREEN_WIDTH - 300, 10, 0, 0 };
 	TextBox* waveText = new TextBox(font, (char*)"Wave: 0", white, waveTextPos, renderer);
 
 	//CREATE WAVES 
@@ -162,6 +167,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	Wave* wave2 = new Wave(2, 9, 2.5);
 	Wave* wave3 = new Wave(3, 12, 2);
 	Wave* wave4 = new Wave(4, 16, 1.5);
+
 
 	std::vector<Wave*> waves = { wave1, wave2, wave3, wave4 };
 
@@ -175,9 +181,6 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	float enemyCooldown = 0.0f;
 
 	float enemyFireRate = 5.0f; 
-
-	
-	
 
 
 	while (!quit)
@@ -218,45 +221,63 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		}
 
 
-		//CHECK IF NEW WAVE
+	
 
-		if (waves[wavePointer]->GetWaveEnd())
+		if (phase == REGULAR_WAVE) 	//STUFF WE DONT WANT TO HAPPEN DURING A BOSS WAVE
 		{
-			if (wavePointer == waves.size() - 1)
+
+			//CHECK IF NEW WAVE
+
+			if (waves[wavePointer]->GetWaveEnd())
 			{
-				quit = true;
+				if (wavePointer == waves.size() - 1)
+				{
+
+					//Initiate boss wave after enemy waves
+
+					phase = BOSS_WAVE;
+
+					bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 240, 0, 480, 210, 1, 50));
+
+
+				}
+				else
+				{
+					wavePointer++;
+
+					enemySpawnRate = waves[wavePointer]->GetSpawnFrequency();
+
+					std::cout << "NEW WAVE INITIATED:" << std::endl;
+
+					enemyTimer = 0;
+				}
+			}
+
+
+			//SPAWN ENEMIES
+
+			if (enemyTimer >= enemySpawnRate)
+			{
+				if ((waves[wavePointer]->GetNumberOfEnemiesLeft() - waves[wavePointer]->GetNumberOfEnemiesAlive()) > 0)
+				{
+					gameManager.CreateEnemy(renderer, enemies, waves[wavePointer]);
+
+
+				}
+				enemyTimer -= enemySpawnRate;
+
 			}
 			else
 			{
-				wavePointer++;
-
-				enemySpawnRate = waves[wavePointer]->GetSpawnFrequency();
-
-				std::cout << "NEW WAVE INITIATED:" << std::endl;
-
-				enemyTimer = 0;
+				enemyTimer += deltaTime;
 			}
 		}
 
+	
 
 
-		//SPAWN ENEMIES
 
-		if (enemyTimer >= enemySpawnRate)
-		{
-			if ((waves[wavePointer]->GetNumberOfEnemiesLeft() - waves[wavePointer]->GetNumberOfEnemiesAlive()) > 0)
-			{
-				gameManager.CreateEnemy(renderer, enemies, waves[wavePointer]);
-
-				
-			}
-			enemyTimer -= enemySpawnRate;
-		
-		}
-		else
-		{
-			enemyTimer += deltaTime;
-		}
+	
 
 		//SPAWN ENEMY PROJECTILE
 
@@ -286,6 +307,18 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		player->Move(deltaTime);
 
+		for (int i = 0; i < bosses.size(); i++) //MOVE BOSS
+		{
+			bosses[i]->MoveBoss(deltaTime);
+
+			if (bosses[i]->GetY() > SCREEN_HEIGHT)
+			{
+				delete bosses[i];
+				bosses.erase(bosses.begin() + i);
+				i--;
+			}
+		}
+
 
 		//Let player shoot
 		
@@ -300,6 +333,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		gameManager.UpdateEnemies(enemies, deltaTime);
 
 		gameManager.UpdateProjectiles(projectiles, deltaTime);
+
 
 		//MANAGE COLLISIONS:
 
@@ -345,6 +379,33 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				}
 			}
 		}
+
+		//Check if boss collided with player projectile
+
+		for (int j = 0; j < bosses.size(); j++)
+		{
+			for (int i = 0; i < projectiles.size(); i++)
+			{
+				if (projectiles[i]->CheckCollision(bosses[j]->GetPosition()))
+				{
+					if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+					{
+						//Damage Player
+
+						bosses[j]->health->TakeDamage(projectiles[i]->GetDamage());
+
+
+						//Destroy projectile
+
+						delete projectiles[i];
+						projectiles.erase(projectiles.begin() + i);
+						i--;
+						std::cout << "Projectile collided with boss" << std::endl;
+					}
+				}
+			}
+		}
+		
 
 
 		//Check if projectiles collided with enemies
@@ -394,6 +455,21 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			}
 		}
 
+		for (int i = 0; i < bosses.size(); i++)
+		{
+			if (!bosses[i]->health->IsAlive())
+			{
+				delete bosses[i]; //free up space
+				bosses.erase(bosses.begin() + i); //remove index
+				i--;
+				//Add score
+
+				gameManager.IncrementScore(300);
+			}
+		}
+
+
+		
 
 		//UPDATE TEXTBOXES
 
@@ -408,8 +484,20 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		std::string enemiesTxt = "Enemies Left: " + std::to_string(waves[wavePointer]->GetNumberOfEnemiesLeft());
 		enemiesText->ChangeText((char*)enemiesTxt.c_str());
 
-		std::string waveTxt = "Wave: " + std::to_string(waves[wavePointer]->GetWaveNum());
-		waveText->ChangeText((char*)waveTxt.c_str());
+		if (phase == REGULAR_WAVE)
+		{
+			std::string waveTxt = "Wave: " + std::to_string(waves[wavePointer]->GetWaveNum());
+			waveText->ChangeText((char*)waveTxt.c_str());
+
+		}
+		else if (phase == BOSS_WAVE)
+		{
+
+			std::string waveTxt = "Wave: BOSS";
+			waveText->ChangeText((char*)waveTxt.c_str());
+
+		}
+
 		
 
 
@@ -422,8 +510,13 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		
 		
 		player->DrawSprite();
-		
 
+		for (unsigned int i = 0; i < bosses.size(); i++)
+		{
+			bosses[i]->DrawSprite();
+		}
+
+	
 		
 
 		for (unsigned int i = 0; i < enemies.size(); i++)

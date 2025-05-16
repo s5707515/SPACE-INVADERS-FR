@@ -23,6 +23,8 @@ public:
 
 	Projectile(SDL_Renderer* _renderer, char* file, int _x, int _y, int _w, int _h, int _speed, Team _team, int _damage); //CTOR
 
+	~Projectile() {}; //DTOR
+
 	void MoveProjectile(float _deltaTime); //Moves the projectile up/down the screen 
 
 private:
