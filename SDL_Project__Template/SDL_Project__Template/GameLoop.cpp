@@ -140,24 +140,43 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	
 	SDL_Color white = { 255,255,255 };
 
-	SDL_Rect healthTextPos{10, 10, 0, 0};
-	TextBox* healthText = new TextBox(font, (char*)"Health: 0", white, healthTextPos, renderer);
+	SDL_Color red = { 255, 0, 0 };
 
-	SDL_Rect scoreTextPos{ SCREEN_WIDTH - 300, 10, 0, 0 };
+	SDL_Rect healthTextPos{10, 75, 0, 0};
+	TextBox* healthText = new TextBox(font, (char*)"Health: 0", red, healthTextPos, renderer);
+
+	SDL_Rect scoreTextPos{10, 10, 0, 0 };
 	TextBox* scoreText = new TextBox(font, (char*)"Score: 0", white, scoreTextPos, renderer);
 
+
+	SDL_Rect enemiesLeftPos{ SCREEN_WIDTH - 400, 75, 0, 0 };
+	TextBox* enemiesText = new TextBox(font, (char*)"Enemies Left: 0", white, enemiesLeftPos, renderer);
+
+
+	SDL_Rect waveTextPos{ SCREEN_WIDTH - 200, 10, 0, 0 };
+	TextBox* waveText = new TextBox(font, (char*)"Wave: 0", white, waveTextPos, renderer);
+
+	//CREATE WAVES 
+
+	Wave* wave1 = new Wave(1, 7, 3.5);
+	Wave* wave2 = new Wave(2, 9, 2.5);
+	Wave* wave3 = new Wave(3, 12, 2);
+	Wave* wave4 = new Wave(4, 16, 1.5);
+
+	std::vector<Wave*> waves = { wave1, wave2, wave3, wave4 };
+
+	int wavePointer = 0;
 
 
 	float enemyTimer = 0.0f;
 
-	float enemySpawnRate = 2.5f;
+	float enemySpawnRate = waves[0]->GetSpawnFrequency();
 
 	float enemyCooldown = 0.0f;
 
 	float enemyFireRate = 5.0f; 
 
 	
-
 	
 
 
@@ -199,6 +218,25 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		}
 
 
+		//CHECK IF NEW WAVE
+
+		if (waves[wavePointer]->GetWaveEnd())
+		{
+			if (wavePointer == waves.size() - 1)
+			{
+				quit = true;
+			}
+			else
+			{
+				wavePointer++;
+
+				enemySpawnRate = waves[wavePointer]->GetSpawnFrequency();
+
+				std::cout << "NEW WAVE INITIATED:" << std::endl;
+
+				enemyTimer = 0;
+			}
+		}
 
 
 
@@ -206,9 +244,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		if (enemyTimer >= enemySpawnRate)
 		{
-			gameManager.CreateEnemy(renderer, enemies);
+			if ((waves[wavePointer]->GetNumberOfEnemiesLeft() - waves[wavePointer]->GetNumberOfEnemiesAlive()) > 0)
+			{
+				gameManager.CreateEnemy(renderer, enemies, waves[wavePointer]);
 
+				
+			}
 			enemyTimer -= enemySpawnRate;
+		
 		}
 		else
 		{
@@ -269,7 +312,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			{
 				std::cout << "Enemy collided with player. " << std::endl;
 
+				delete enemies[i];
 				enemies.erase(enemies.begin() + i);
+				i--;
 
 				player->health->TakeDamage(1);
 
@@ -293,8 +338,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 					//Destroy projectile
 
+					delete projectiles[i];
 					projectiles.erase(projectiles.begin() + i);
-
+					i--;
 					std::cout << "Projectile collided with player" << std::endl;
 				}
 			}
@@ -320,7 +366,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						//Destroy projectile
 
+						delete projectiles[j];
 						projectiles.erase(projectiles.begin() + j);
+						j--;
 
 						std::cout << "Projectile collided with enemy" << std::endl;
 
@@ -337,8 +385,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		{
 			if (!enemies[i]->health->IsAlive())
 			{
-				enemies.erase(enemies.begin() + i);
-
+				delete enemies[i]; //free up space
+				enemies.erase(enemies.begin() + i); //remove index
+				i--;
 				//Add score
 
 				gameManager.IncrementScore(10);
@@ -355,7 +404,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		std::string scoreTxt = "Score: " + std::to_string(gameManager.GetScore());
 		scoreText->ChangeText((char*)scoreTxt.c_str());
+
+		std::string enemiesTxt = "Enemies Left: " + std::to_string(waves[wavePointer]->GetNumberOfEnemiesLeft());
+		enemiesText->ChangeText((char*)enemiesTxt.c_str());
+
+		std::string waveTxt = "Wave: " + std::to_string(waves[wavePointer]->GetWaveNum());
+		waveText->ChangeText((char*)waveTxt.c_str());
 		
+
 
 		//Clear Old Render
 
@@ -388,6 +444,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		healthText->DrawText();
 		scoreText->DrawText();
+		enemiesText->DrawText();
+		waveText->DrawText();
 
 
 		//Present Render each Frame
@@ -401,6 +459,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			quit = true;
 		}
 	}
+
+	//Delete TextBoxes
+
+	for (int i = 0; i < waves.size(); i++)
+	{
+		delete waves[i];
+	}
+
 
 	delete player;
 

@@ -1,18 +1,29 @@
 #include "Enemy.h"
 
-Enemy :: Enemy(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, int _speed, int _maxHealth) : Sprite(_renderer, _file, _x, _y, _w, _h) 
+
+Enemy :: Enemy(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, int _speed, int _maxHealth, Wave* &_wave) : Sprite(_renderer, _file, _x, _y, _w, _h)
 {
 	speed = _speed;
 
 	health = new Health(_maxHealth);
 
+	wave = _wave;
+
+	wave->IncrementAliveEnemies();
+
 } //CTOR
 
 Enemy:: ~Enemy()
 {
+
 	if (health != nullptr)
 	{
 		delete health;
+	}
+
+	if (wave != nullptr)
+	{
+		wave->DecrementNumberOfEnemies();
 	}
 }
 

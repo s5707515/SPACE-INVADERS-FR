@@ -31,17 +31,29 @@ void TextBox::ChangeText(char* _newText)
 	if (!txtSurface)
 	{
 		std::cout << "Failed to render text: " << TTF_GetError() << std::endl;
+
+		system("pause");
 	}
 	else
 	{
+		if (textTexture != nullptr)
+		{
+			//Destroy old texture
+
+			SDL_DestroyTexture(textTexture);
+			textTexture = nullptr;
+		}
 		position.w = txtSurface->w;
 		position.h = txtSurface->h;
 
 		textTexture = SDL_CreateTextureFromSurface(renderer, txtSurface);
+		SDL_FreeSurface(txtSurface);
 
 		if (textTexture == 0)
 		{
 			std::cout << "Failed to create texture from surface: " << SDL_GetError() << std::endl;
+
+			system("pause");
 		}
 
 	}

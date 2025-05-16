@@ -42,13 +42,15 @@ void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, floa
 		{
 			std::cout << "Deleted Projectile!" << std::endl;
 
+			delete _projectiles[i];
 			_projectiles.erase(_projectiles.begin() + i);
+			i--;
 		}
 
 	}
 }
 
-void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies) //Spawn a random enemy
+void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, Wave* &_wave) //Spawn a random enemy
 {
 	int enemyID = rand() % 3;
 
@@ -87,21 +89,21 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 	case 0:
 		//SPAWN SQUID
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, 0, 64, 64, 40,2));
+		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, 0, 64, 64, 40,1, _wave));
 
 		break;
 
 	case 1:
 		//SPAWN CRAB
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, 0, 88, 64, 25,3));
+		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, 0, 88, 64, 25,2, _wave));
 
 		break;
 
 	case 2:
 		//SPAWN OCTOPUS
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, 0, 96, 64, 15,4));
+		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, 0, 96, 64, 15,3,_wave));
 
 		break;
 	}
@@ -120,7 +122,9 @@ void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime)
 		{
 			std::cout << "Deleted enemy: " << _enemies[i] << std::endl;
 
+			delete _enemies[i];
 			_enemies.erase(_enemies.begin() + i);
+			i--;
 		}
 
 	}
