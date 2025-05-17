@@ -22,7 +22,11 @@ Boss::~Boss()
 
 void Boss::MoveBoss(float _deltaTime)
 {
-	truePos.y += speed * _deltaTime * 10;
+	if (truePos.y < stopHeight)
+	{
+		truePos.y += speed * _deltaTime * 10;
+	}
+	
 }
 
 

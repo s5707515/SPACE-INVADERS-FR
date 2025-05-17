@@ -64,7 +64,7 @@ void GameManager::CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>
 	{
 		freeSpace = true; //Assume there is a free space to spawn enemy
 
-		xPos = (rand() % bossPos.w) + bossPos.x; //Generate xPos for spawnPoint
+		xPos = (rand() % bossPos.w - 48) + bossPos.x; //Generate xPos for spawnPoint
 
 		SDL_Rect spawnCheck = { xPos, 0,96, SCREEN_HEIGHT };
 

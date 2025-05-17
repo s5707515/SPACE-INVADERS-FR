@@ -15,6 +15,8 @@ private:
 
 	int speed = 1;
 
+	int stopHeight = 250; //Height boss stops moving forward at
+
 	float attackRate = 3.0f;
 
 	GameManager* gameManager;
