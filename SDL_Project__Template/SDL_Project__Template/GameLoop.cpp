@@ -246,7 +246,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 							SDL_Rect retryPos = GORetryText->GetPositionRect();
 							SDL_Rect backPos = GOMenuText->GetPositionRect();
 
-							if (SDL_PointInRect(&mousePos, &retryPos));
+							if (SDL_PointInRect(&mousePos, &retryPos))
 							{
 								//Reload level
 
