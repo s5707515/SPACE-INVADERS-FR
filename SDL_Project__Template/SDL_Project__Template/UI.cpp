@@ -16,13 +16,15 @@ TextBox::TextBox(TTF_Font* _font, char* _text, SDL_Color _colour, SDL_Rect pos, 
 
 	renderer = _renderer;
 
+	visibility = true;
+
 	ChangeText(_text);
 	
 }
 
-void TextBox::ChangeText(char* _newText)
+void TextBox::ChangeText(const char* _newText)
 {
-	text = _newText;
+	text = (char*)_newText;
 
 	SDL_Surface* txtSurface{ nullptr };
 
@@ -64,5 +66,14 @@ void TextBox::ChangeText(char* _newText)
 
 void TextBox::DrawText()
 {
-	SDL_RenderCopy(renderer, textTexture, NULL, &position);
+	if (visibility)
+	{
+		SDL_RenderCopy(renderer, textTexture, NULL, &position);
+	}
+	
+}
+
+void TextBox::ToggleVisibilty(bool _visibility)
+{
+	visibility = _visibility;
 }

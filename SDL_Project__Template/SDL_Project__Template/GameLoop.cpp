@@ -149,6 +149,10 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	SDL_Color red = { 255, 0, 0 };
 
+	SDL_Color yellow = { 255, 255, 0 };
+
+	SDL_Color black = { 0,0,0 };
+
 	SDL_Rect healthTextPos{10, 75, 0, 0};
 	TextBox* healthText = new TextBox(font, (char*)"Health: 0", red, healthTextPos, renderer);
 
@@ -156,12 +160,23 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	TextBox* scoreText = new TextBox(font, (char*)"Score: 0", white, scoreTextPos, renderer);
 
 
-	SDL_Rect enemiesLeftPos{ SCREEN_WIDTH - 400, 75, 0, 0 };
+	SDL_Rect enemiesLeftPos{ SCREEN_WIDTH - 400, 10, 0, 0 };
 	TextBox* enemiesText = new TextBox(font, (char*)"Enemies Left: 0", white, enemiesLeftPos, renderer);
 
+	SDL_Rect waveWarningTxtPos{ SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT/ 2 - 180, 0, 0 };
 
-	SDL_Rect waveTextPos{ SCREEN_WIDTH - 300, 10, 0, 0 };
-	TextBox* waveText = new TextBox(font, (char*)"Wave: 0", white, waveTextPos, renderer);
+	TextBox* waveWarningText = new TextBox(font, (char*)"WAVE 1", yellow, waveWarningTxtPos, renderer);
+
+
+	SDL_Rect GOScorePos = { SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 700, 0,0 };
+	TextBox* GOScoreText = new TextBox(font, (char*)"Score: 0", black, GOScorePos, renderer);
+
+	SDL_Rect GORetry = { SCREEN_WIDTH / 2 - 110, SCREEN_HEIGHT - 600, 0,0 };
+	TextBox* GORetryText = new TextBox(font, (char*)"Play Again", white, GORetry, renderer);
+
+	SDL_Rect GOMainMenu = { SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 500, 0,0 };
+	TextBox* GOMenuText = new TextBox(font, (char*)"Go to Menu", white, GOMainMenu, renderer);
+
 
 	//CREATE WAVES 
 
@@ -171,14 +186,16 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	Wave* wave4 = new Wave(4, 16, 1.5);
 
 
-	//Wave* tempWave = new Wave(69, 1, 2);
+	Wave* tempWave = new Wave(69, 1, 2);
 
 
-	std::vector<Wave*> waves = { wave1, wave2, wave3, wave4 };
-	//std::vector<Wave*> waves{tempWave}; //TEMPORARY
+	//std::vector<Wave*> waves = { wave1, wave2, wave3, wave4 };
+	std::vector<Wave*> waves{tempWave}; //TEMPORARY
 
 	int wavePointer = 0;
 
+
+	//DELAYS
 
 	float enemyTimer = 0.0f;
 
@@ -188,6 +205,10 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	float bossAttackTimer = 3.0f;
 
 	float bossCooldown = 0;
+
+	float bossInitDelay = 4.0f;
+
+	float currentBossDelay = 0;
 
 	float enemyCooldown = 0.0f;
 
@@ -241,16 +262,31 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 			if (waves[wavePointer]->GetWaveEnd())
 			{
+
+				waveWarningText->ToggleVisibilty(true);
+
 				if (wavePointer == waves.size() - 1)
 				{
+					if (currentBossDelay > bossInitDelay)
+					{
+						//Initiate boss wave after enemy waves
 
-					//Initiate boss wave after enemy waves
+						phase = BOSS_WAVE;
 
-					phase = BOSS_WAVE;
+						bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 360, -180, 720, 280, 1.5, 75, &gameManager));
 
-					bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 360, -180, 720, 280, 1.5, 75, &gameManager));
+						bossAttackTimer = bosses[0]->GetAttackRate();
 
-					bossAttackTimer = bosses[0]->GetAttackRate();
+						waveWarningText->ToggleVisibilty(false); //HIDE WAVE WARNING
+					}
+					else
+					{
+						currentBossDelay += deltaTime;
+
+						waveWarningText->ChangeText((char*)"BOSS WAVE!");
+					}
+
+					
 
 
 				}
@@ -258,13 +294,18 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					wavePointer++;
 
+					std::string waveTxt = "WAVE " + std::to_string(waves[wavePointer]->GetWaveNum());
+					waveWarningText->ChangeText((char*)waveTxt.c_str());
+
 					enemySpawnRate = waves[wavePointer]->GetSpawnFrequency();
 
 					std::cout << "NEW WAVE INITIATED:" << std::endl;
 
 					enemyTimer = 0;
 				}
+
 			}
+			
 
 
 			//SPAWN ENEMIES
@@ -279,6 +320,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				}
 				enemyTimer -= enemySpawnRate;
 
+				waveWarningText->ToggleVisibilty(false);
+
 			}
 			else
 			{
@@ -289,7 +332,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	
 
-		if (phase == BOSS_WAVE)
+		if (phase == BOSS_WAVE) //BOSS WAVE EXCLUSIVE STUFF
 		{
 			bossCooldown += deltaTime;
 
@@ -358,166 +401,183 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 					gameManager.IncrementScore(300);
 
-					phase = VICTORY;
+
+					//GET VICTORY SCREEN
+
+					phase = GAME_OVER;
+
+					victory = true;
 				}
 			}
 
 
 		}
 
-
-
-	
-
-		//SPAWN ENEMY PROJECTILE
-
-		if (enemies.size() != 0)
+		if (phase == BOSS_WAVE || phase == REGULAR_WAVE) //WAVE STUFF
 		{
-			if (enemyCooldown > enemyFireRate)
+			//SPAWN ENEMY PROJECTILE
+
+			if (enemies.size() != 0)
 			{
-				int randEnemy = rand() % enemies.size();
-
-				SDL_Rect position = enemies[randEnemy]->GetPosition();
-
-				SDL_Point spawnPos{ position.x + (position.w / 2), position.y + (position.h / 2)};
-				gameManager.CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
-
-				enemyCooldown = 0;
-
-				enemyFireRate = (rand() % 4) + 1;
-				
-			}
-		}
-
-		enemyCooldown += deltaTime;
-
-		
-		
-		//MOVE SPRITES
-
-		player->Move(deltaTime);
-
-		for (int i = 0; i < bosses.size(); i++) //MOVE BOSS
-		{
-			bosses[i]->MoveBoss(deltaTime);
-
-			if (bosses[i]->GetY() > SCREEN_HEIGHT)
-			{
-				delete bosses[i];
-				bosses.erase(bosses.begin() + i);
-				i--;
-			}
-		}
-
-
-		//Let player shoot
-		
-		player->Shoot(projectiles, deltaTime);
-
-
-
-
-		//UPDATE ENEMIES
-
-
-		gameManager.UpdateEnemies(enemies, deltaTime);
-
-		gameManager.UpdateProjectiles(projectiles, deltaTime);
-
-
-		//MANAGE COLLISIONS:
-
-
-		//Check if player collided with enemies
-
-		for (int i = 0; i < enemies.size(); i++)
-		{
-			if (player->CheckCollision(enemies[i]->GetPosition()))
-			{
-				std::cout << "Enemy collided with player. " << std::endl;
-
-				delete enemies[i];
-				enemies.erase(enemies.begin() + i);
-				i--;
-
-				player->health->TakeDamage(1);
-
-				std::cout << "Player Health: " << player->health->GetCurrentHealth() << std::endl;
-
-			}
-		}
-
-		//Check if player collided with enemy projectile
-
-		for (int i = 0; i < projectiles.size(); i++)
-		{
-			if (projectiles[i]->CheckCollision(player->GetPosition()))
-			{
-				if (projectiles[i]->GetTeam() == Projectile::Team::ENEMY_TEAM)
+				if (enemyCooldown > enemyFireRate)
 				{
-					//Damage Player
+					int randEnemy = rand() % enemies.size();
 
-					player->health->TakeDamage(projectiles[i]->GetDamage());
+					SDL_Rect position = enemies[randEnemy]->GetPosition();
+
+					SDL_Point spawnPos{ position.x + (position.w / 2), position.y + (position.h / 2) };
+					gameManager.CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
+
+					enemyCooldown = 0;
+
+					enemyFireRate = (rand() % 4) + 1;
+
+				}
+			}
+
+			enemyCooldown += deltaTime;
 
 
-					//Destroy projectile
+			//MOVE SPRITES
 
-					delete projectiles[i];
-					projectiles.erase(projectiles.begin() + i);
+			player->Move(deltaTime);
+
+			for (int i = 0; i < bosses.size(); i++) //MOVE BOSS
+			{
+				bosses[i]->MoveBoss(deltaTime);
+
+				if (bosses[i]->GetY() > SCREEN_HEIGHT)
+				{
+					delete bosses[i];
+					bosses.erase(bosses.begin() + i);
 					i--;
-					std::cout << "Projectile collided with player" << std::endl;
 				}
 			}
-		}
-
-		
 
 
-		//Check if projectiles collided with enemies
+			//Let player shoot
 
-		for (int i = 0; i < enemies.size(); i++)
-		{
-			for (int j = 0; j < projectiles.size(); j++)
+			player->Shoot(projectiles, deltaTime);
+
+
+
+
+			//UPDATE ENEMIES
+
+
+			gameManager.UpdateEnemies(enemies, deltaTime);
+
+			gameManager.UpdateProjectiles(projectiles, deltaTime);
+
+
+			//MANAGE COLLISIONS:
+
+
+			//Check if player collided with enemies
+
+			for (int i = 0; i < enemies.size(); i++)
 			{
-				if (projectiles[j]->CheckCollision(enemies[i]->GetPosition())) //Check for collision
+				if (player->CheckCollision(enemies[i]->GetPosition()))
 				{
-					//CHECK WHICH TEAM THE PROJECTILE IS ON
+					std::cout << "Enemy collided with player. " << std::endl;
 
-					if (projectiles[j]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+					delete enemies[i];
+					enemies.erase(enemies.begin() + i);
+					i--;
+
+					player->health->TakeDamage(1);
+
+					std::cout << "Player Health: " << player->health->GetCurrentHealth() << std::endl;
+
+				}
+			}
+
+			//Check if player collided with enemy projectile
+
+			for (int i = 0; i < projectiles.size(); i++)
+			{
+				if (projectiles[i]->CheckCollision(player->GetPosition()))
+				{
+					if (projectiles[i]->GetTeam() == Projectile::Team::ENEMY_TEAM)
 					{
+						//Damage Player
 
-						//Damage Enemy
+						player->health->TakeDamage(projectiles[i]->GetDamage());
 
-						enemies[i]->health->TakeDamage(projectiles[j]->GetDamage());
 
 						//Destroy projectile
 
-						delete projectiles[j];
-						projectiles.erase(projectiles.begin() + j);
-						j--;
-
-						std::cout << "Projectile collided with enemy" << std::endl;
-
-						
-
+						delete projectiles[i];
+						projectiles.erase(projectiles.begin() + i);
+						i--;
+						std::cout << "Projectile collided with player" << std::endl;
 					}
 				}
 			}
-		}
 
-		//DESTROY DEAD ENEMIES (enemies cant be destroyed in nested loop as will cause range errors)
 
-		for (int i = 0; i < enemies.size(); i++)
-		{
-			if (!enemies[i]->health->IsAlive())
+
+
+			//Check if projectiles collided with enemies
+
+			for (int i = 0; i < enemies.size(); i++)
 			{
-				delete enemies[i]; //free up space
-				enemies.erase(enemies.begin() + i); //remove index
-				i--;
-				//Add score
+				for (int j = 0; j < projectiles.size(); j++)
+				{
+					if (projectiles[j]->CheckCollision(enemies[i]->GetPosition())) //Check for collision
+					{
+						//CHECK WHICH TEAM THE PROJECTILE IS ON
 
-				gameManager.IncrementScore(10);
+						if (projectiles[j]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+						{
+
+							//Damage Enemy
+
+							enemies[i]->health->TakeDamage(projectiles[j]->GetDamage());
+
+							//Destroy projectile
+
+							delete projectiles[j];
+							projectiles.erase(projectiles.begin() + j);
+							j--;
+
+							std::cout << "Projectile collided with enemy" << std::endl;
+
+
+
+						}
+					}
+				}
 			}
+
+			//DESTROY DEAD ENEMIES (enemies cant be destroyed in nested loop as will cause range errors)
+
+			for (int i = 0; i < enemies.size(); i++)
+			{
+				if (!enemies[i]->health->IsAlive())
+				{
+					delete enemies[i]; //free up space
+					enemies.erase(enemies.begin() + i); //remove index
+					i--;
+					//Add score
+
+					gameManager.IncrementScore(10);
+				}
+			}
+
+
+
+
+
+			//Check for Player LOSE
+
+			if (!player->health->IsAlive())
+			{
+				phase = GAME_OVER;
+
+				victory = false;
+			}
+
 		}
 
 
@@ -525,38 +585,50 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		//UPDATE TEXTBOXES
 
-	
+
 		std::string healthTxt = "Health: " + std::to_string(player->health->GetCurrentHealth());
-		healthText->ChangeText((char*)healthTxt.c_str());
+		healthText->ChangeText(healthTxt.c_str());
 
 
 		std::string scoreTxt = "Score: " + std::to_string(gameManager.GetScore());
-		scoreText->ChangeText((char*)scoreTxt.c_str());
+		scoreText->ChangeText(scoreTxt.c_str());
 
 		std::string enemiesTxt = "Enemies Left: " + std::to_string(waves[wavePointer]->GetNumberOfEnemiesLeft());
-		enemiesText->ChangeText((char*)enemiesTxt.c_str());
-
-		if (phase == REGULAR_WAVE)
-		{
-			std::string waveTxt = "Wave: " + std::to_string(waves[wavePointer]->GetWaveNum());
-			waveText->ChangeText((char*)waveTxt.c_str());
-
-		}
-		else if (phase == BOSS_WAVE)
-		{
-
-			std::string waveTxt = "Wave: BOSS";
-			waveText->ChangeText((char*)waveTxt.c_str());
-
-		}
-
-		
-
+		enemiesText->ChangeText(enemiesTxt.c_str());
 
 		//Clear Old Render
 
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
+
+		if (phase == GAME_OVER)
+		{
+			SDL_Rect boxPos = { SCREEN_WIDTH/2 - 190, SCREEN_HEIGHT - 720, 400, 320 };
+
+			//DISPLAY GAME OVER MENU
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderFillRect(renderer, &boxPos);//Draw Menu block
+			
+
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+			boxPos = GORetryText->GetPositionRect();
+			SDL_RenderFillRect(renderer, &boxPos);//Draw Retry button
+
+			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+			boxPos = GOMenuText->GetPositionRect();
+			SDL_RenderFillRect(renderer, &boxPos); //Draw BackToMenu button
+
+
+			GOScoreText->ChangeText(scoreTxt.c_str());
+
+			GOScoreText->DrawText();
+			GORetryText->DrawText();
+			GOMenuText->DrawText();
+
+		}
+
+	
 
 		//DRAW SPRITES
 		
@@ -590,19 +662,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		healthText->DrawText();
 		scoreText->DrawText();
 		enemiesText->DrawText();
-		waveText->DrawText();
+		waveWarningText->DrawText();
 
 
 		//Present Render each Frame
 
 		SDL_RenderPresent(renderer);
 
-		//Check for quit
-
-		if (!player->health->IsAlive())
-		{
-			quit = true;
-		}
+		
 	}
 
 	//Delete TextBoxes

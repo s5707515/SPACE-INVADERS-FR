@@ -25,13 +25,19 @@ private:
 
 	char* text;
 
+	bool visibility;
+
 public:
 
-	TextBox(TTF_Font* _font, char* _text, SDL_Color _colour, SDL_Rect pos, SDL_Renderer* _renderer); //CTOR
+	TextBox(TTF_Font* _font,char* _text, SDL_Color _colour, SDL_Rect pos, SDL_Renderer* _renderer); //CTOR
 
 	~TextBox() {}; //DTOR
 
-	void ChangeText(char* _newText);
+	void ChangeText(const char* _newText);
 
 	void DrawText();
+
+	void ToggleVisibilty(bool _visibiliyy);
+
+	SDL_Rect GetPositionRect() { return position; }
 };

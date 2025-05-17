@@ -9,9 +9,7 @@ enum Phase
 
 	BOSS_WAVE,
 
-	VICTORY,
-
-	DEFEAT
+	GAME_OVER
 
 };
 
@@ -46,6 +44,8 @@ private:
 	//PHASE
 
 	Phase phase;
+
+	bool victory = false;
 
 
 
