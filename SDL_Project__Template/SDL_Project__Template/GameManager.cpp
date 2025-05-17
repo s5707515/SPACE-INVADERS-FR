@@ -50,6 +50,66 @@ void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, floa
 	}
 }
 
+void GameManager::CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, SDL_Rect bossPos) //Used for BOSS
+{
+	int enemyID = rand() % 3;
+
+	Enemy* newEnemy = nullptr;
+
+	bool freeSpace = true;
+
+	int xPos = 0;
+
+	do
+	{
+		freeSpace = true; //Assume there is a free space to spawn enemy
+
+		xPos = (rand() % bossPos.w) + bossPos.x; //Generate xPos for spawnPoint
+
+		SDL_Rect spawnCheck = { xPos, 0,96, SCREEN_HEIGHT };
+
+		for (int i = 0; i < _enemies.size(); i++) //Check that no enemies exist in this column (STOP ENEMIES OVERLAPPING)
+		{
+			if (_enemies[i]->CheckCollision(spawnCheck))
+			{
+				freeSpace = false;
+			}
+		}
+
+
+
+	} while (!freeSpace);
+
+
+
+
+
+	switch (enemyID)
+	{
+	case 0:
+		//SPAWN SQUID
+
+		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, bossPos.y + bossPos.h, 64, 64, 32, 1));
+
+		break;
+
+	case 1:
+		//SPAWN CRAB
+
+		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, bossPos.y + bossPos.h, 88, 64, 20, 2));
+
+		break;
+
+	case 2:
+		//SPAWN OCTOPUS
+
+		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, bossPos.y + bossPos.h, 96, 64, 12, 3));
+
+		break;
+	}
+
+}
+
 void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, Wave* &_wave) //Spawn a random enemy
 {
 	int enemyID = rand() % 3;
@@ -64,7 +124,7 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 	{
 		freeSpace = true; //Assume there is a free space to spawn enemy
 
-		xPos = rand() % (SCREEN_WIDTH - 98) + 48; //Generate xPos for spawnPoint
+		xPos = rand() % (SCREEN_WIDTH - 96); //Generate xPos for spawnPoint
 
 		SDL_Rect spawnCheck = { xPos, 0,96, SCREEN_HEIGHT }; 
 
@@ -81,29 +141,26 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 	} while (!freeSpace);
 
 	
-
-
-
 	switch (enemyID)
 	{
 	case 0:
 		//SPAWN SQUID
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, 0, 64, 64, 40,1, _wave));
+		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, 0, 64, 64, 32,1, _wave));
 
 		break;
 
 	case 1:
 		//SPAWN CRAB
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, 0, 88, 64, 25,2, _wave));
+		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, 0, 88, 64, 20,2, _wave));
 
 		break;
 
 	case 2:
 		//SPAWN OCTOPUS
 
-		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, 0, 96, 64, 15,3,_wave));
+		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, 0, 96, 64, 12,3,_wave));
 
 		break;
 	}

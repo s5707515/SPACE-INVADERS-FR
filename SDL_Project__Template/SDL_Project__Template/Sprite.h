@@ -32,6 +32,8 @@ public:
 
 	int GetX() { return position.x; }
 	int GetY() { return position.y; }
+	int GetW() { return position.w; }
+	int GetH() { return position.h; }
 
 	SDL_Rect& GetPosition() { return position; }
 

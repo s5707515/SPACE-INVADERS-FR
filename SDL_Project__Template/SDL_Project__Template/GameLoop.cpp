@@ -127,6 +127,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 	phase = REGULAR_WAVE;
 
+
+
 	GameManager gameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	GameManager* gmPtr{ nullptr };
@@ -169,7 +171,11 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	Wave* wave4 = new Wave(4, 16, 1.5);
 
 
+	//Wave* tempWave = new Wave(69, 1, 2);
+
+
 	std::vector<Wave*> waves = { wave1, wave2, wave3, wave4 };
+	//std::vector<Wave*> waves{tempWave}; //TEMPORARY
 
 	int wavePointer = 0;
 
@@ -177,6 +183,11 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 	float enemyTimer = 0.0f;
 
 	float enemySpawnRate = waves[0]->GetSpawnFrequency();
+
+
+	float bossAttackTimer = 3.0f;
+
+	float bossCooldown = 0;
 
 	float enemyCooldown = 0.0f;
 
@@ -237,7 +248,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 					phase = BOSS_WAVE;
 
-					bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 240, 0, 480, 210, 1, 50));
+					bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 360, -180, 720, 280, 1.5, 75, &gameManager));
+
+					bossAttackTimer = bosses[0]->GetAttackRate();
 
 
 				}
@@ -273,7 +286,84 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			}
 		}
 
+
 	
+
+		if (phase == BOSS_WAVE)
+		{
+			bossCooldown += deltaTime;
+
+			if (bossCooldown > bossAttackTimer)
+			{
+				int attackID = (rand() % 4) + 1;
+
+
+				if (attackID == 1) //Spawn enemies 25% of the time
+				{
+					enemyCooldown = 0; //Reset cooldown so they don't fire before player can react
+
+					bosses[0]->BackUpCall(enemies, 2);
+
+				}
+				else //Fire projectiles 75% of the time
+				{
+					bosses[0]->FireBarrage(projectiles, 5);
+				}
+
+				
+				bossCooldown = 0;
+			}
+
+
+
+
+			//BOSS COLLISIONS
+
+			//Check if boss collided with player projectile
+
+			for (int j = 0; j < bosses.size(); j++)
+			{
+				for (int i = 0; i < projectiles.size(); i++)
+				{
+					if (projectiles[i]->CheckCollision(bosses[j]->GetPosition()))
+					{
+						if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+						{
+							//Damage Player
+
+							bosses[j]->health->TakeDamage(projectiles[i]->GetDamage());
+
+
+							//Destroy projectile
+
+							delete projectiles[i];
+							projectiles.erase(projectiles.begin() + i);
+							i--;
+							std::cout << "Projectile collided with boss" << std::endl;
+						}
+					}
+				}
+			}
+
+			//CHECK IF BOSS HAS BEEN DEFEATED
+
+			for (int i = 0; i < bosses.size(); i++)
+			{
+				if (!bosses[i]->health->IsAlive())
+				{
+					delete bosses[i]; //free up space
+					bosses.erase(bosses.begin() + i); //remove index
+					i--;
+					//Add score
+
+					gameManager.IncrementScore(300);
+
+					phase = VICTORY;
+				}
+			}
+
+
+		}
 
 
 
@@ -380,31 +470,6 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			}
 		}
 
-		//Check if boss collided with player projectile
-
-		for (int j = 0; j < bosses.size(); j++)
-		{
-			for (int i = 0; i < projectiles.size(); i++)
-			{
-				if (projectiles[i]->CheckCollision(bosses[j]->GetPosition()))
-				{
-					if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM)
-					{
-						//Damage Player
-
-						bosses[j]->health->TakeDamage(projectiles[i]->GetDamage());
-
-
-						//Destroy projectile
-
-						delete projectiles[i];
-						projectiles.erase(projectiles.begin() + i);
-						i--;
-						std::cout << "Projectile collided with boss" << std::endl;
-					}
-				}
-			}
-		}
 		
 
 
@@ -452,19 +517,6 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				//Add score
 
 				gameManager.IncrementScore(10);
-			}
-		}
-
-		for (int i = 0; i < bosses.size(); i++)
-		{
-			if (!bosses[i]->health->IsAlive())
-			{
-				delete bosses[i]; //free up space
-				bosses.erase(bosses.begin() + i); //remove index
-				i--;
-				//Add score
-
-				gameManager.IncrementScore(300);
 			}
 		}
 

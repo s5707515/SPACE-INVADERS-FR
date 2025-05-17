@@ -11,6 +11,19 @@ Enemy :: Enemy(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int
 
 	wave->IncrementAliveEnemies();
 
+	partOfWave = true;
+
+} //CTOR
+
+Enemy::Enemy(SDL_Renderer* _renderer, char* _file, int _x, int _y, int _w, int _h, int _speed, int _maxHealth) : Sprite(_renderer, _file, _x, _y, _w, _h)
+{
+	speed = _speed;
+
+	health = new Health(_maxHealth);
+
+	partOfWave = false;
+
+	wave = nullptr;
 } //CTOR
 
 Enemy:: ~Enemy()
@@ -21,11 +34,16 @@ Enemy:: ~Enemy()
 		delete health;
 	}
 
-	if (wave != nullptr)
+	if (partOfWave)
 	{
-		wave->DecrementNumberOfEnemies();
+		if (wave != nullptr)
+		{
+			wave->DecrementNumberOfEnemies();
+		}
 	}
 }
+
+	
 
 void Enemy::MoveEnemy(float _deltaTime) //Move enemy down the screen
 {

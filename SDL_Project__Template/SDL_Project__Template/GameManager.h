@@ -27,6 +27,7 @@ public:
 
 	void CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, Wave* &_wave); //Instantiates a new enemy (Squid / Crab / Octopus)
 
+	void CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, SDL_Rect bossPos);
 
 	void UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime); //Moves enemies down the screen, destroying them if they hit the bottom
 
