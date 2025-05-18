@@ -8,6 +8,7 @@
 
 #include "GameLoop.h"
 
+#include "Sprite.h"
 #include "Player.h"
 #include "GameManager.h" //Enemy.h and Projectile.h are included in this
 #include "UI.h"
@@ -82,13 +83,22 @@ bool GameLoop::SetUpGame()
 		system("pause");
 		success = false;
 	}
-	else  
+	else  //INITIALISE FONTS
 	{
 		font = TTF_OpenFont("PixelifySans-Bold.ttf", 50);
 
 		if (!font)
 		{
 			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
+			success = false;
+		}
+
+		bigFont = TTF_OpenFont("PixelifySans-Bold.ttf", 96);
+
+		if (!bigFont)
+		{
+			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
+			success = false;
 		}
 	}
 
@@ -119,6 +129,156 @@ void GameLoop::EndGame()
 	std::cout << "Game was clean up successfully!" << std::endl;
 }
 
+void GameLoop::DoFrameLimiting()
+{
+	//FRAME LIMITING
+
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), ticksCount + 16)); //wait 16MS (60FBS)
+
+	//Calc deltatime in seconds
+
+	deltaTime = (SDL_GetTicks() - ticksCount) / 1000.0f;
+
+	//Update tick count for next frame
+
+	ticksCount = SDL_GetTicks();
+
+	//Clamp deltatime (prevent framedrops)
+
+	if (deltaTime > 0.05f)
+	{
+		deltaTime = 0.05f;
+	}
+
+}
+
+void GameLoop :: MainMenu()
+{
+	bool leaveMenu = false;
+
+	menuState = MAIN_MENU;
+
+	SDL_Event event;
+
+	//CREATE TEXTBOXES / IMAGES
+
+	Sprite* shipImage = new Sprite(renderer, (char*)"SpaceShip.bmp", SCREEN_WIDTH / 2 - 160, 180, 320, 320);
+
+	SDL_Rect titlePos = {45,10,0,0};
+	TextBox* titleText = new TextBox(bigFont,(char*)"SPACE SHOOTER",white, titlePos, renderer);
+
+	SDL_Rect playGamePos = { SCREEN_WIDTH / 2 - 130, 600, 0,0 };
+	TextBox* playGameText = new TextBox(font, (char*)"PLAY GAME", white, playGamePos, renderer);
+
+	SDL_Rect instrPos = { SCREEN_WIDTH / 2 - 167, 700, 0,0 };
+	TextBox* instrText = new TextBox(font, (char*)"INSTRUCTIONS", white, instrPos, renderer);
+
+	SDL_Rect quitPos = { SCREEN_WIDTH / 2 - 65, 800, 0,0 };
+	TextBox* quitText = new TextBox(font, (char*)"QUIT", red, quitPos, renderer);
+
+
+	while (!leaveMenu)
+	{
+
+		while (SDL_PollEvent(&event))
+		{
+			switch (event.type)
+			{
+				case SDL_QUIT:
+
+					leaveMenu = true;
+
+					closeGame = true;
+
+					break;
+
+				case SDL_MOUSEBUTTONDOWN:
+
+					if (menuState == MAIN_MENU)
+					{
+						//Check Main Menu buttons for mouse click
+
+						int x = event.button.x;
+						int y = event.button.y;
+
+						SDL_Point mousePos = { x, y };
+
+						SDL_Rect playRect = playGameText->GetPositionRect();
+						SDL_Rect instrRect = instrText->GetPositionRect();
+						SDL_Rect quitRect = quitText->GetPositionRect();
+					
+
+						if (SDL_PointInRect(&mousePos, &playRect))
+						{
+							//Play Game
+
+							leaveMenu = true;
+
+							closeGame = false;
+							
+						}
+
+						if (SDL_PointInRect(&mousePos, &instrRect))
+						{
+							//Show Instructions
+
+							menuState = INSTRUCTIONS;
+						}
+
+						if (SDL_PointInRect(&mousePos,&quitRect))
+						{
+							//Quit Game
+
+							leaveMenu = true;
+
+							closeGame = true;
+
+						}
+					}
+					else if (menuState == INSTRUCTIONS)
+					{
+						//Check instruction buttons for mouse click
+					}
+
+					break;
+			}
+		}
+
+
+		//DO FRAME LIMITING
+
+		DoFrameLimiting(); //Calculates deltaTime
+
+		//Clear Old Render
+
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
+
+
+		if (menuState == MAIN_MENU)
+		{
+			titleText->DrawText();
+			playGameText->DrawText();
+			instrText->DrawText();
+			quitText->DrawText();
+
+			shipImage->DrawSprite();
+		}
+
+
+
+
+
+
+		//Present Render each Frame
+
+		SDL_RenderPresent(renderer);
+
+
+	}
+
+}
+
 void GameLoop::PlayGame() //The Actual GameLoop of the game
 {
 	bool retry = true;
@@ -141,7 +301,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		gmPtr = &gameManager;
 
-		Player* player = new Player(renderer, (char*)"SpaceShip.bmp", 100, SCREEN_HEIGHT - 100, 80, 80, gmPtr, 5);
+		Player* player = new Player(renderer, (char*)"SpaceShip.bmp", SCREEN_WIDTH / 2 - 40, SCREEN_HEIGHT - 100, 80, 80, gmPtr, 5);
 
 		//CREATE VECTORS TO HOLD MULTIPLE OBJECTS
 
@@ -151,13 +311,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		//CREATE TEXTBOXS
 
-		SDL_Color white = { 255,255,255 };
-
-		SDL_Color red = { 255, 0, 0 };
-
-		SDL_Color yellow = { 255, 255, 0 };
-
-		SDL_Color black = { 0,0,0 };
+		
 
 		SDL_Rect healthTextPos{ 10, 75, 0, 0 };
 		TextBox* healthText = new TextBox(font, (char*)"Health: 0", red, healthTextPos, renderer);
@@ -188,8 +342,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		Wave* wave1 = new Wave(1, 7, 3.5);
 		Wave* wave2 = new Wave(2, 9, 2.5);
-		Wave* wave3 = new Wave(3, 12, 2);
-		Wave* wave4 = new Wave(4, 16, 1.5);
+		Wave* wave3 = new Wave(3, 12, 2.1);
+		Wave* wave4 = new Wave(4, 16, 1.6);
 
 
 		//Wave* tempWave = new Wave(69, 1, 2);
@@ -230,6 +384,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				case SDL_QUIT:
 
 					quit = true;
+
+					closeGame = true;
 					break;
 
 				case SDL_MOUSEBUTTONDOWN:
@@ -272,25 +428,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			}
 
 
-			//FRAME LIMITING
+			//DO FRAME LIMITING
 
-			while (!SDL_TICKS_PASSED(SDL_GetTicks(), ticksCount + 16)); //wait 16MS (60FBS)
-
-			//Calc deltatime in seconds
-
-			float deltaTime = (SDL_GetTicks() - ticksCount) / 1000.0f;
-
-			//Update tick count for next frame
-
-			ticksCount = SDL_GetTicks();
-
-			//Clamp deltatime (prevent framedrops)
-
-			if (deltaTime > 0.05f)
-			{
-				deltaTime = 0.05f;
-			}
-
+			DoFrameLimiting(); //Calculates deltaTime
 
 
 
@@ -379,17 +519,17 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				if (bossCooldown > bossAttackTimer)
 				{
-					int attackID = (rand() % 4) + 1;
+					int attackID = (rand() % 8) + 1;
 
 
-					if (attackID == 1) //Spawn enemies 25% of the time
+					if (attackID == 1) //Spawn enemies 12.5% of the time
 					{
 						enemyCooldown = 0; //Reset cooldown so they don't fire before player can react
 
 						bosses[0]->BackUpCall(enemies, 2);
 
 					}
-					else //Fire projectiles 75% of the time
+					else //Fire projectiles 85.5% of the time
 					{
 						bosses[0]->FireBarrage(projectiles, 5);
 					}

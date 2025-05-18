@@ -52,7 +52,7 @@ void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, floa
 
 void GameManager::CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, SDL_Rect bossPos) //Used for BOSS
 {
-	int enemyID = rand() % 3;
+	int enemyID = rand() % 2;
 
 	Enemy* newEnemy = nullptr;
 
@@ -86,21 +86,16 @@ void GameManager::CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>
 
 	switch (enemyID)
 	{
+		//I dont want squids to spawn because they're too quick to react too in BOSS PHASE
+
 	case 0:
-		//SPAWN SQUID
-
-		_enemies.push_back(new Enemy(renderer, (char*)"Squid.bmp", xPos, bossPos.y + bossPos.h, 64, 64, 32, 1));
-
-		break;
-
-	case 1:
 		//SPAWN CRAB
 
 		_enemies.push_back(new Enemy(renderer, (char*)"Crab.bmp", xPos, bossPos.y + bossPos.h, 88, 64, 20, 2));
 
 		break;
 
-	case 2:
+	case 1:
 		//SPAWN OCTOPUS
 
 		_enemies.push_back(new Enemy(renderer, (char*)"Octopus.bmp", xPos, bossPos.y + bossPos.h, 96, 64, 12, 3));

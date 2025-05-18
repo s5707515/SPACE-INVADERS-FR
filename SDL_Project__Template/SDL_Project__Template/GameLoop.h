@@ -13,6 +13,13 @@ enum Phase
 
 };
 
+enum MenuState
+{
+	MAIN_MENU,
+
+	INSTRUCTIONS
+};
+
 class GameLoop
 {
 private:
@@ -22,6 +29,8 @@ private:
 	int SCREEN_WIDTH = 600;
 
 	int SCREEN_HEIGHT = 800;
+
+	bool closeGame = false;
 
 
 	//SDL STUFF
@@ -37,15 +46,31 @@ private:
 
 	Uint32 ticksCount;
 
+	float deltaTime;
+
 	//TEXT TTF STUFF
 
 	TTF_Font* font{ nullptr };
+
+	TTF_Font* bigFont{ nullptr };
+
+	SDL_Color white = { 255,255,255 };
+
+	SDL_Color red = { 255, 0, 0 };
+
+	SDL_Color yellow = { 255, 255, 0 };
+
+	SDL_Color black = { 0,0,0 };
 
 	//PHASE
 
 	Phase phase;
 
+	MenuState menuState;
+
 	bool victory = false;
+
+
 
 
 
@@ -56,4 +81,10 @@ public:
 
 	void PlayGame(); // Contains the actual gameloop
 
+	void DoFrameLimiting();//Does frame limiting and returns deltaTime between frames.
+
+
+	void MainMenu(); //Contains the Main Menu loop (Returns true for PlayGame() and false for quit)
+
+	bool GetCloseGame() { return closeGame; }
 };

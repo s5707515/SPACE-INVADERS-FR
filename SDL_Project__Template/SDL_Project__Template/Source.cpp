@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
 	int SCREEN_HEIGHT = 1000;
 
-
+	bool quit = false;
 
 	srand(time(0));
 
@@ -21,7 +21,23 @@ int main(int argc, char* argv[])
 
 	if (game != nullptr)
 	{
-		game->PlayGame(); //Play the game loop
+		do
+		{
+			game->MainMenu();
+			
+			quit = game->GetCloseGame();
+		
+
+			
+
+			if (!quit)
+			{
+				game->PlayGame(); //Play the game loop
+				quit = game->GetCloseGame();
+			}
+
+		} while (!quit);
+		
 
 		delete game;
 	}
