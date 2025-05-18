@@ -100,6 +100,13 @@ bool GameLoop::SetUpGame()
 			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
 			success = false;
 		}
+		smallFont = TTF_OpenFont("PixelifySans-Bold.ttf", 30);
+
+		if (!smallFont)
+		{
+			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
+			success = false;
+		}
 	}
 
 	return success;
@@ -111,6 +118,8 @@ void GameLoop::EndGame()
 	//CLOSE FONTS
 
 	TTF_CloseFont(font);
+	TTF_CloseFont(bigFont);
+	TTF_CloseFont(smallFont);
 
 	//DESTROY RENDERER
 
@@ -160,21 +169,52 @@ void GameLoop :: MainMenu()
 
 	SDL_Event event;
 
-	//CREATE TEXTBOXES / IMAGES
+	//CREATE TEXTBOXES / IMAGES:
+
+
+	//MAIN MENU
 
 	Sprite* shipImage = new Sprite(renderer, (char*)"SpaceShip.bmp", SCREEN_WIDTH / 2 - 160, 180, 320, 320);
 
-	SDL_Rect titlePos = {45,10,0,0};
-	TextBox* titleText = new TextBox(bigFont,(char*)"SPACE SHOOTER",white, titlePos, renderer);
+	TextBox* titleText = new TextBox(bigFont,(char*)"SPACE SHOOTER",white,{ 45,10,0,0 }, renderer);
 
-	SDL_Rect playGamePos = { SCREEN_WIDTH / 2 - 130, 600, 0,0 };
-	TextBox* playGameText = new TextBox(font, (char*)"PLAY GAME", white, playGamePos, renderer);
+	TextBox* playGameText = new TextBox(font, (char*)"PLAY GAME", white, { SCREEN_WIDTH / 2 - 130, 600, 0,0 }, renderer);
 
-	SDL_Rect instrPos = { SCREEN_WIDTH / 2 - 167, 700, 0,0 };
-	TextBox* instrText = new TextBox(font, (char*)"INSTRUCTIONS", white, instrPos, renderer);
+	
+	TextBox* instrText = new TextBox(font, (char*)"INSTRUCTIONS", white, { SCREEN_WIDTH / 2 - 167, 700, 0,0 }, renderer);
 
-	SDL_Rect quitPos = { SCREEN_WIDTH / 2 - 65, 800, 0,0 };
-	TextBox* quitText = new TextBox(font, (char*)"QUIT", red, quitPos, renderer);
+
+	TextBox* quitText = new TextBox(font, (char*)"QUIT", red, { SCREEN_WIDTH / 2 - 65, 800, 0,0 }, renderer);
+
+
+	//INSTRUCTIONS MENU
+
+	TextBox* instrTitleText = new TextBox(bigFont, (char*)"INSTRUCTIONS", white, { 70, 10, 0, 0 }, renderer);
+
+	std::string instructions = 
+		"The goal of the game is to survive waves of \n"
+		"increasing difficulty.\n"
+		"\n"
+		"To move, press [A] and [D] or the left and right \n"
+		"arrow keys. To shoot, hold the [SPACEBAR].\n"
+		"\n"
+		"Enemies will periodically spawn from the top \n"
+		"of the screen. Your goal is to shoot them \n"
+		"before they reach the bottom. You will take \n"
+		"damage if they hit the bottom of the screen \n"
+		"or if you collide with an enemy.\n"
+		"\n"
+		"WATCH OUT for enemy projectiles too! \n"
+		"\n"
+		"Good luck! (Make it to WAVE 5 for a suprise!!!)";
+
+
+
+	TextBox* instructionsParaText = new TextBox(smallFont, (char*)instructions.c_str(), yellow, { 60, 180, 0,0 }, renderer);
+
+	TextBox* backToMenuText = new TextBox(font, (char*)"BACK TO MENU", red, { SCREEN_WIDTH / 2 - 170, 800, 0, 0 }, renderer);
+
+
 
 
 	while (!leaveMenu)
@@ -194,15 +234,17 @@ void GameLoop :: MainMenu()
 
 				case SDL_MOUSEBUTTONDOWN:
 
+					int x = event.button.x;
+					int y = event.button.y;
+
+					SDL_Point mousePos = { x, y };
+
+
 					if (menuState == MAIN_MENU)
 					{
 						//Check Main Menu buttons for mouse click
 
-						int x = event.button.x;
-						int y = event.button.y;
-
-						SDL_Point mousePos = { x, y };
-
+				
 						SDL_Rect playRect = playGameText->GetPositionRect();
 						SDL_Rect instrRect = instrText->GetPositionRect();
 						SDL_Rect quitRect = quitText->GetPositionRect();
@@ -238,6 +280,17 @@ void GameLoop :: MainMenu()
 					else if (menuState == INSTRUCTIONS)
 					{
 						//Check instruction buttons for mouse click
+
+						SDL_Rect backToMenuRect = backToMenuText->GetPositionRect();
+
+						if (SDL_PointInRect(&mousePos, &backToMenuRect))
+						{
+							//Go back to main menu
+
+							menuState = MAIN_MENU;
+						}
+
+		
 					}
 
 					break;
@@ -265,6 +318,13 @@ void GameLoop :: MainMenu()
 			shipImage->DrawSprite();
 		}
 
+		if (menuState == INSTRUCTIONS)
+		{
+			instrTitleText->DrawText();
+			instructionsParaText->DrawText();
+			backToMenuText->DrawText();
+		}
+
 
 
 
@@ -276,6 +336,20 @@ void GameLoop :: MainMenu()
 
 
 	}
+
+
+	//Delete UI Stuff
+
+	delete shipImage;
+
+	delete titleText;
+	delete playGameText;
+	delete instrText;
+	delete quitText;
+
+	delete instrTitleText;
+	delete instructionsParaText;
+	delete backToMenuText;
 
 }
 
@@ -309,33 +383,22 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		std::vector<Projectile*> projectiles;
 		std::vector<Boss*> bosses; //(Theres only ever one)
 
+
 		//CREATE TEXTBOXS
 
+		TextBox* healthText = new TextBox(font, (char*)"Health: 0", red, { 10, 75, 0, 0 }, renderer);
 		
+		TextBox* scoreText = new TextBox(font, (char*)"Score: 0", white,{ 10, 10, 0, 0 }, renderer);
 
-		SDL_Rect healthTextPos{ 10, 75, 0, 0 };
-		TextBox* healthText = new TextBox(font, (char*)"Health: 0", red, healthTextPos, renderer);
+		TextBox* enemiesText = new TextBox(font, (char*)"Enemies Left: 0", white, { SCREEN_WIDTH - 400, 10, 0, 0 }, renderer);
 
-		SDL_Rect scoreTextPos{ 10, 10, 0, 0 };
-		TextBox* scoreText = new TextBox(font, (char*)"Score: 0", white, scoreTextPos, renderer);
+		TextBox* waveWarningText = new TextBox(font, (char*)"WAVE 1", yellow, { SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 180, 0, 0 }, renderer);
 
+		TextBox* GOScoreText = new TextBox(font, (char*)"Score: 0", black, { SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 700, 0,0 }, renderer);
+		
+		TextBox* GORetryText = new TextBox(font, (char*)"Play Again", white, { SCREEN_WIDTH / 2 - 110, SCREEN_HEIGHT - 600, 0,0 }, renderer);
 
-		SDL_Rect enemiesLeftPos{ SCREEN_WIDTH - 400, 10, 0, 0 };
-		TextBox* enemiesText = new TextBox(font, (char*)"Enemies Left: 0", white, enemiesLeftPos, renderer);
-
-		SDL_Rect waveWarningTxtPos{ SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 180, 0, 0 };
-
-		TextBox* waveWarningText = new TextBox(font, (char*)"WAVE 1", yellow, waveWarningTxtPos, renderer);
-
-
-		SDL_Rect GOScorePos = { SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 700, 0,0 };
-		TextBox* GOScoreText = new TextBox(font, (char*)"Score: 0", black, GOScorePos, renderer);
-
-		SDL_Rect GORetry = { SCREEN_WIDTH / 2 - 110, SCREEN_HEIGHT - 600, 0,0 };
-		TextBox* GORetryText = new TextBox(font, (char*)"Play Again", white, GORetry, renderer);
-
-		SDL_Rect GOMainMenu = { SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 500, 0,0 };
-		TextBox* GOMenuText = new TextBox(font, (char*)"Go to Menu", white, GOMainMenu, renderer);
+		TextBox* GOMenuText = new TextBox(font, (char*)"Go to Menu", white, { SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 500, 0,0 }, renderer);
 
 
 		//CREATE WAVES 
@@ -519,17 +582,17 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				if (bossCooldown > bossAttackTimer)
 				{
-					int attackID = (rand() % 8) + 1;
+					int attackID = (rand() % 7) + 1;
 
 
-					if (attackID == 1) //Spawn enemies 12.5% of the time
+					if (attackID == 1) //Spawn enemies 1/7  of the time
 					{
 						enemyCooldown = 0; //Reset cooldown so they don't fire before player can react
 
 						bosses[0]->BackUpCall(enemies, 2);
 
 					}
-					else //Fire projectiles 85.5% of the time
+					else //Fire projectiles 6/7 of the time
 					{
 						bosses[0]->FireBarrage(projectiles, 5);
 					}
@@ -587,7 +650,6 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						phase = GAME_OVER;
 
-						victory = true;
 					}
 				}
 
@@ -764,7 +826,6 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					phase = GAME_OVER;
 
-					victory = false;
 				}
 
 			}
@@ -873,15 +934,45 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		}
 
-		//Delete 
+		//Delete Waves
 
 		for (int i = 0; i < waves.size(); i++)
 		{
 			delete waves[i];
 		}
 
+		//Delete any remaining projectiles, bosses, enemies
+
+		for (int i = 0; i < enemies.size(); i++)
+		{
+			delete enemies[i];
+		}
+
+		for (int i = 0; i < projectiles.size(); i++)
+		{
+			delete projectiles[i];
+		}
+
+		for (int i = 0; i < bosses.size(); i++)
+		{
+			delete bosses[i];
+		}
+
+		//Delete Textboxes
+
+		delete healthText;
+		delete scoreText;
+		delete enemiesText;
+		delete waveWarningText;
+		delete GOScoreText;
+		delete GORetryText;
+		delete GOMenuText;
+
+		//Delete other pointers
 
 		delete player;
+
+		delete gmPtr;
 
 	}
 	

@@ -28,7 +28,7 @@ void TextBox::ChangeText(const char* _newText)
 
 	SDL_Surface* txtSurface{ nullptr };
 
-	txtSurface = TTF_RenderText_Solid(font, text, colour);
+	txtSurface = TTF_RenderText_Blended_Wrapped(font, text, colour,900);
 
 	if (!txtSurface)
 	{

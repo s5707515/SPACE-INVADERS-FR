@@ -54,6 +54,8 @@ private:
 
 	TTF_Font* bigFont{ nullptr };
 
+	TTF_Font* smallFont{ nullptr };
+
 	SDL_Color white = { 255,255,255 };
 
 	SDL_Color red = { 255, 0, 0 };
@@ -68,7 +70,6 @@ private:
 
 	MenuState menuState;
 
-	bool victory = false;
 
 
 
