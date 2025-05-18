@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <iostream>
 
 
@@ -78,7 +79,7 @@ bool GameLoop::SetUpGame()
 
 	if (TTF_Init() < 0)
 	{
-		std::cout << "SDL_ttf could not be initialised! SDL Error: " << SDL_GetError() << std::endl;
+		std::cout << "SDL_ttf could not be initialised! SDL Error: " << TTF_GetError() << std::endl;
 
 		system("pause");
 		success = false;
@@ -89,7 +90,7 @@ bool GameLoop::SetUpGame()
 
 		if (!font)
 		{
-			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
+			std::cout << "Failed to load font: " << TTF_GetError() << std::endl;
 			success = false;
 		}
 
@@ -97,17 +98,37 @@ bool GameLoop::SetUpGame()
 
 		if (!bigFont)
 		{
-			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
+			std::cout << "Failed to load font: " << TTF_GetError() << std::endl;
 			success = false;
 		}
 		smallFont = TTF_OpenFont("PixelifySans-Bold.ttf", 30);
 
 		if (!smallFont)
 		{
-			std::cout << "Failed to load font: " << SDL_GetError() << std::endl;
+			std::cout << "Failed to load font: " <<TTF_GetError() << std::endl;
 			success = false;
 		}
 	}
+
+
+
+	//Initialise SDL_Mixer
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
+	{
+		std::cout << "Failed to open audio: " << Mix_GetError() << std::endl;
+
+		success = false;
+	}
+	else
+	{
+		menuMusic = new Music("Mars.wav");
+		wavesMusic = new Music("Mercury.wav");
+		wavesMusic2 = new Music("Venus.wav");
+		bossMusic = new Music("BossMain.wav");
+	}
+
+
 
 	return success;
 }
@@ -120,6 +141,16 @@ void GameLoop::EndGame()
 	TTF_CloseFont(font);
 	TTF_CloseFont(bigFont);
 	TTF_CloseFont(smallFont);
+
+
+	//CLOSE MUSIC
+
+	delete menuMusic;
+	delete wavesMusic;
+	delete wavesMusic2;
+	delete bossMusic;
+
+	Mix_CloseAudio();
 
 	//DESTROY RENDERER
 
@@ -168,6 +199,8 @@ void GameLoop :: MainMenu()
 	menuState = MAIN_MENU;
 
 	SDL_Event event;
+
+	menuMusic->PlayMusic();
 
 	//CREATE TEXTBOXES / IMAGES:
 
@@ -357,6 +390,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 {
 	bool retry = true;
 
+	wavesMusic->PlayMusic();
+
 	while (retry)
 	{
 		SDL_Event event;
@@ -369,13 +404,10 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 
 
-		GameManager gameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
+		GameManager* gameManager = new GameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		GameManager* gmPtr{ nullptr };
 
-		gmPtr = &gameManager;
-
-		Player* player = new Player(renderer, (char*)"SpaceShip.bmp", SCREEN_WIDTH / 2 - 40, SCREEN_HEIGHT - 100, 80, 80, gmPtr, 5);
+		Player* player = new Player(renderer, (char*)"SpaceShip.bmp", SCREEN_WIDTH / 2 - 40, SCREEN_HEIGHT - 100, 80, 80, gameManager, 5);
 
 		//CREATE VECTORS TO HOLD MULTIPLE OBJECTS
 
@@ -515,11 +547,13 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 							phase = BOSS_WAVE;
 
-							bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 360, -180, 720, 280, 1.5, 90, &gameManager));
+							bosses.push_back(new Boss(renderer, (char*)"UFO.bmp", (SCREEN_WIDTH / 2) - 360, -180, 720, 280, 1.5, 90, gameManager));
 
 							bossAttackTimer = bosses[0]->GetAttackRate();
 
 							waveWarningText->ToggleVisibilty(false); //HIDE WAVE WARNING
+
+							bossMusic->PlayMusic(); //PLAY BOSS MUSIC
 
 						}
 						else
@@ -537,6 +571,15 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 					else
 					{
 						wavePointer++;
+
+						if (waves[wavePointer]->GetWaveNum() % 2 == 0) //Alternate WAVE music each wave
+						{
+							wavesMusic2->PlayMusic();
+						}
+						else
+						{
+							wavesMusic->PlayMusic();
+						}
 
 						std::string waveTxt = "WAVE " + std::to_string(waves[wavePointer]->GetWaveNum());
 						waveWarningText->ChangeText((char*)waveTxt.c_str());
@@ -558,7 +601,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					if ((waves[wavePointer]->GetNumberOfEnemiesLeft() - waves[wavePointer]->GetNumberOfEnemiesAlive()) > 0)
 					{
-						gameManager.CreateEnemy(renderer, enemies, waves[wavePointer]);
+						gameManager->CreateEnemy(renderer, enemies, waves[wavePointer]);
 
 
 					}
@@ -643,7 +686,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						i--;
 						//Add score
 
-						gameManager.IncrementScore(300);
+						gameManager->IncrementScore(300);
 
 
 						//GET VICTORY SCREEN
@@ -669,7 +712,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						SDL_Rect position = enemies[randEnemy]->GetPosition();
 
 						SDL_Point spawnPos{ position.x + (position.w / 2), position.y + (position.h / 2) };
-						gameManager.CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
+						gameManager->CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
 
 						enemyCooldown = 0;
 
@@ -716,9 +759,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				}
 
 
-				gameManager.UpdateEnemies(enemies, deltaTime); //Move and despawn enemies when offscreen
+				gameManager->UpdateEnemies(enemies, deltaTime); //Move and despawn enemies when offscreen
 
-				gameManager.UpdateProjectiles(projectiles, deltaTime); //Move and despawn projectiles when offscreen
+				gameManager->UpdateProjectiles(projectiles, deltaTime); //Move and despawn projectiles when offscreen
 
 
 				//MANAGE COLLISIONS:
@@ -812,7 +855,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						i--;
 						//Add score
 
-						gameManager.IncrementScore(10);
+						gameManager->IncrementScore(10);
 					}
 				}
 
@@ -840,7 +883,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			healthText->ChangeText(healthTxt.c_str());
 
 
-			std::string scoreTxt = "Score: " + std::to_string(gameManager.GetScore());
+			std::string scoreTxt = "Score: " + std::to_string(gameManager->GetScore());
 			scoreText->ChangeText(scoreTxt.c_str());
 
 			if (phase == REGULAR_WAVE)
@@ -972,7 +1015,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 		delete player;
 
-		delete gmPtr;
+		delete gameManager;
 
 	}
 	

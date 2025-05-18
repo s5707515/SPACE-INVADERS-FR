@@ -1,7 +1,9 @@
 #pragma once
 
 #include <sdl.h>
-#include <SDL_ttf.h>#
+#include <SDL_ttf.h>
+
+#include "Sounds.h"
 
 enum Phase
 {
@@ -64,12 +66,25 @@ private:
 
 	SDL_Color black = { 0,0,0 };
 
+
+	//MUSIC STUFF
+
+	Music* menuMusic{ nullptr };
+
+	Music* wavesMusic{ nullptr };
+
+	Music* wavesMusic2{ nullptr };
+
+	Music* bossMusic{ nullptr };
+	
+
 	//PHASE
 
 	Phase phase;
 
 	MenuState menuState;
 
+	
 
 
 
