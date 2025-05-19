@@ -977,7 +977,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						//Spawn explosion
 
-						explosions.push_back(new Explosion(renderer, (char*)"ExplosionSheet.bmp", enemies[i]->GetX(), enemies[i]->GetY(), 480, 60, 8, 0.5f, enemies[i]->GetW() / 32));
+						explosions.push_back(new Explosion(renderer, (char*)"ExplosionSheet.bmp", enemies[i]->GetX() - (enemies[i]->GetW() / 3), enemies[i]->GetY(), 480, 60, 8, 0.5f, enemies[i]->GetW() / 32));
 
 
 						delete enemies[i]; //free up space
