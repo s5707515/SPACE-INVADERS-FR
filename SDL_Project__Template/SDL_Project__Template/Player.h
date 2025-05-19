@@ -8,6 +8,8 @@
 #include "Projectile.h"
 #include "GameManager.h"
 
+#include "Sounds.h"
+
 class Player : public Sprite
 {
 
@@ -24,6 +26,12 @@ private:
 	float shotCoolDown = fireRate; //Allow player to shoot straight away
 
 	GameManager* gameManager;
+
+	SFX* lazer1{ nullptr };
+
+	SFX* lazer2{ nullptr };
+
+	SFX* lazer3{ nullptr };
 
 	
 

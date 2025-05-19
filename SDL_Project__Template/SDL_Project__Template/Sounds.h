@@ -6,9 +6,10 @@ class Music
 {
 private:
 
-	char* fileName;
+	const char* fileName;
 
 	Mix_Music* music{ nullptr };
+
 
 public:
 
@@ -16,4 +17,27 @@ public:
 	~Music(); //DTOR
 
 	void PlayMusic();
+};
+
+
+class SFX
+{
+private:
+
+
+	const char* fileName;
+
+	Mix_Chunk* sound{ nullptr };
+
+	int volume{ 10 };
+
+public:
+
+	SFX(const char* _fileName, int _volume); //CTOR
+	~SFX(); //DTOR
+
+	void PlaySound(); //Plays sound effect
+
+
+
 };

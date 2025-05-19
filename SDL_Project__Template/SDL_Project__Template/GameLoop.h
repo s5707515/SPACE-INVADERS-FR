@@ -76,7 +76,22 @@ private:
 	Music* wavesMusic2{ nullptr };
 
 	Music* bossMusic{ nullptr };
+
+
+	SFX* deathSFX{ nullptr };
+
+	SFX* enemyLazer1{ nullptr };
+	SFX* enemyLazer2{ nullptr };
+
+	SFX* bossWarningSFX{ nullptr };
+	SFX* backUpCallSFX{ nullptr };
+	SFX* bossDeathSFX{ nullptr };
 	
+	SFX* enemyDeath1{ nullptr };
+	SFX* enemyDeath2{ nullptr };
+	SFX* enemyDeath3{ nullptr };
+
+	SFX* playerDamage{ nullptr };
 
 	//PHASE
 

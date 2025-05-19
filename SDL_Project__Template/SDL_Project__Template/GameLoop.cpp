@@ -122,10 +122,29 @@ bool GameLoop::SetUpGame()
 	}
 	else
 	{
+		Mix_VolumeMusic(40);
 		menuMusic = new Music("Mars.wav");
 		wavesMusic = new Music("Mercury.wav");
 		wavesMusic2 = new Music("Venus.wav");
 		bossMusic = new Music("BossMain.wav");
+		
+		deathSFX = new SFX("vgdeathsound.wav",70);
+
+		enemyLazer1 = new SFX("sfx_wpn_laser3.wav", 40);
+		enemyLazer2 = new SFX("sfx_wpn_laser4.wav", 40);
+
+		bossWarningSFX = new SFX("sfx_alarm_loop2.wav", 50);
+		backUpCallSFX = new SFX("sfx_sounds_fanfare1.wav", 40);
+		bossDeathSFX = new SFX("sfx_exp_cluster1.wav", 50);
+
+
+		enemyDeath1 = new SFX("sfx_exp_short_soft3.wav", 40);
+		enemyDeath2 = new SFX("sfx_exp_short_soft4.wav", 40);
+		enemyDeath3 = new SFX("sfx_exp_short_soft8.wav", 40);
+
+		playerDamage = new SFX("sfx_sounds_impact7.wav", 40);
+	
+
 	}
 
 
@@ -149,6 +168,20 @@ void GameLoop::EndGame()
 	delete wavesMusic;
 	delete wavesMusic2;
 	delete bossMusic;
+
+	delete deathSFX;
+	delete enemyLazer1;
+	delete enemyLazer2;
+	delete bossWarningSFX;
+	delete backUpCallSFX;
+	delete bossDeathSFX;
+
+	delete enemyDeath1;
+	delete enemyDeath2;
+	delete enemyDeath3;
+
+	delete playerDamage;
+
 
 	Mix_CloseAudio();
 
@@ -390,10 +423,13 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 {
 	bool retry = true;
 
-	wavesMusic->PlayMusic();
+
 
 	while (retry)
 	{
+
+		wavesMusic->PlayMusic();
+
 		SDL_Event event;
 
 		bool quit = false;
@@ -414,6 +450,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		std::vector<Enemy*> enemies;
 		std::vector<Projectile*> projectiles;
 		std::vector<Boss*> bosses; //(Theres only ever one)
+
+		bool playWarningOnce = true; //Makes it so the boss warning sound is only played once
 
 
 		//CREATE TEXTBOXS
@@ -436,9 +474,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		//CREATE WAVES 
 
 		Wave* wave1 = new Wave(1, 7, 3.5);
-		Wave* wave2 = new Wave(2, 9, 2.5);
-		Wave* wave3 = new Wave(3, 12, 2.1);
-		Wave* wave4 = new Wave(4, 16, 1.6);
+		Wave* wave2 = new Wave(2, 9, 2.6);
+		Wave* wave3 = new Wave(3, 12, 2.2);
+		Wave* wave4 = new Wave(4, 16, 1.7);
 
 
 		//Wave* tempWave = new Wave(69, 1, 2);
@@ -560,7 +598,16 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						{
 							currentBossDelay += deltaTime;
 
-							waveWarningText->ChangeText((char*)"BOSS WAVE!");
+							waveWarningText->ChangeText((char*)" BOSS\nWAVE!");
+
+							if(playWarningOnce)
+							{
+								bossWarningSFX->PlaySound();
+
+								playWarningOnce = false;
+							}
+							
+							
 
 						}
 
@@ -623,21 +670,42 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			{
 				bossCooldown += deltaTime;
 
+				//BOSS ATTACKS
+
 				if (bossCooldown > bossAttackTimer)
 				{
-					int attackID = (rand() % 7) + 1;
+					int attackID = (rand() % 4) + 1;
 
 
-					if (attackID == 1) //Spawn enemies 1/7  of the time
+					if (attackID == 1) //Spawn enemies 1/4  of the time
 					{
 						enemyCooldown = 0; //Reset cooldown so they don't fire before player can react
 
-						bosses[0]->BackUpCall(enemies, 2);
+						bosses[0]->BackUpCall(enemies, 1);
+
+						backUpCallSFX->PlaySound();
 
 					}
-					else //Fire projectiles 6/7 of the time
+					else //Fire projectiles 3/4 of the time
 					{
 						bosses[0]->FireBarrage(projectiles, 5);
+
+						int sfxID = rand() % 2;
+
+						switch (sfxID)
+						{
+						case 0:
+
+							enemyLazer1->PlaySound();
+
+							break;
+
+						case 1:
+
+							enemyLazer2->PlaySound();
+
+							break;
+						}
 					}
 
 
@@ -684,6 +752,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						delete bosses[i]; //free up space
 						bosses.erase(bosses.begin() + i); //remove index
 						i--;
+
+						bossDeathSFX->PlaySound();
+
 						//Add score
 
 						gameManager->IncrementScore(300);
@@ -692,6 +763,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						//GET VICTORY SCREEN
 
 						phase = GAME_OVER;
+
+						
 
 					}
 				}
@@ -713,6 +786,23 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						SDL_Point spawnPos{ position.x + (position.w / 2), position.y + (position.h / 2) };
 						gameManager->CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
+
+						int sfxID = rand() % 2;
+
+						switch (sfxID)
+						{
+							case 0:
+
+								enemyLazer1->PlaySound();
+
+								break;
+
+							case 1:
+
+								enemyLazer2->PlaySound();
+
+								break;
+						}
 
 						enemyCooldown = 0;
 
@@ -755,6 +845,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 					if (enemies[i]->GetY() > SCREEN_HEIGHT)
 					{
 						player->health->TakeDamage(1);
+
+						playerDamage->PlaySound();
 					}
 				}
 
@@ -781,6 +873,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						player->health->TakeDamage(1);
 
+						playerDamage->PlaySound();
+
 						std::cout << "Player Health: " << player->health->GetCurrentHealth() << std::endl;
 
 					}
@@ -797,6 +891,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 							//Damage Player
 
 							player->health->TakeDamage(projectiles[i]->GetDamage());
+
+							playerDamage->PlaySound();
 
 
 							//Destroy projectile
@@ -837,6 +933,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 								std::cout << "Projectile collided with enemy" << std::endl;
 
+							
 
 
 							}
@@ -856,6 +953,30 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						//Add score
 
 						gameManager->IncrementScore(10);
+
+						int soundID = rand() % 3;
+
+						switch (soundID)
+						{
+						case 0:
+
+							enemyDeath1->PlaySound();
+
+							break;
+
+						case 1:
+
+							enemyDeath2->PlaySound();
+
+							break;
+
+						case 2:
+
+							enemyDeath3->PlaySound();
+
+							break;
+						}
+
 					}
 				}
 
@@ -868,6 +989,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				if (!player->health->IsAlive())
 				{
 					phase = GAME_OVER;
+
+					deathSFX->PlaySound();
 
 				}
 
