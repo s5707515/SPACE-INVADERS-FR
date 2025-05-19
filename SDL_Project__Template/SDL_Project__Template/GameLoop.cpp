@@ -554,6 +554,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 								retry = true;
 								quit = true;
+#
+								menu1->PlaySound();
 							}
 
 							if (SDL_PointInRect(&mousePos, &backPos))
@@ -562,6 +564,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 								retry = false;
 								quit = true;
+
+								menu2->PlaySound();
 							}
 						}
 
