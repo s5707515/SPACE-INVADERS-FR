@@ -78,6 +78,10 @@ private:
 	Music* bossMusic{ nullptr };
 
 
+	SFX* menu1{ nullptr };
+	SFX* menu2{ nullptr };
+
+
 	SFX* deathSFX{ nullptr };
 
 	SFX* enemyLazer1{ nullptr };

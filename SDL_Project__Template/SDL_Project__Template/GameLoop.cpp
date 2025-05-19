@@ -143,6 +143,9 @@ bool GameLoop::SetUpGame()
 		enemyDeath3 = new SFX("sfx_exp_short_soft8.wav", 40);
 
 		playerDamage = new SFX("sfx_sounds_impact7.wav", 40);
+
+		menu1 = new SFX("sfx_menu_select1.wav", 40);
+		menu2 = new SFX("sfx_menu_select2.wav", 40);
 	
 
 	}
@@ -181,6 +184,9 @@ void GameLoop::EndGame()
 	delete enemyDeath3;
 
 	delete playerDamage;
+
+	delete menu1;
+	delete menu2;
 
 
 	Mix_CloseAudio();
@@ -323,6 +329,8 @@ void GameLoop :: MainMenu()
 							leaveMenu = true;
 
 							closeGame = false;
+
+							menu1->PlaySound();
 							
 						}
 
@@ -331,6 +339,8 @@ void GameLoop :: MainMenu()
 							//Show Instructions
 
 							menuState = INSTRUCTIONS;
+
+							menu2->PlaySound();
 						}
 
 						if (SDL_PointInRect(&mousePos,&quitRect))
@@ -340,6 +350,7 @@ void GameLoop :: MainMenu()
 							leaveMenu = true;
 
 							closeGame = true;
+
 
 						}
 					}
@@ -354,6 +365,8 @@ void GameLoop :: MainMenu()
 							//Go back to main menu
 
 							menuState = MAIN_MENU;
+
+							menu2->PlaySound();
 						}
 
 		
