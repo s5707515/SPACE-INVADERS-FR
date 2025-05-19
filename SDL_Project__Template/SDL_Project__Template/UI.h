@@ -2,11 +2,6 @@
 
 #include <SDL_ttf.h>
 
-struct GameUI
-{
-
-
-};
 
 
 class TextBox
@@ -37,7 +32,7 @@ public:
 
 	void DrawText();
 
-	void ToggleVisibilty(bool _visibiliyy);
+	void ToggleVisibilty(bool _visibility);
 
 	SDL_Rect GetPositionRect() { return position; }
 };
