@@ -15,6 +15,7 @@
 #include "UI.h"
 
 #include "Boss.h"
+#include "Explosion.h"
 
 #include <vector>
 GameLoop::GameLoop(int _SCREEN_WIDTH, int _SCREEN_HEIGHT) //CTOR (Automatically initialise the game)
@@ -287,7 +288,7 @@ void GameLoop :: MainMenu()
 	TextBox* backToMenuText = new TextBox(font, (char*)"BACK TO MENU", red, { SCREEN_WIDTH / 2 - 170, 800, 0, 0 }, renderer);
 
 
-
+	
 
 	while (!leaveMenu)
 	{
@@ -395,6 +396,7 @@ void GameLoop :: MainMenu()
 			quitText->DrawText();
 
 			shipImage->DrawSprite();
+
 		}
 
 		if (menuState == INSTRUCTIONS)
@@ -463,6 +465,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		std::vector<Enemy*> enemies;
 		std::vector<Projectile*> projectiles;
 		std::vector<Boss*> bosses; //(Theres only ever one)
+		std::vector<Explosion*> explosions;
 
 		bool playWarningOnce = true; //Makes it so the boss warning sound is only played once
 
@@ -937,10 +940,15 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 							if (projectiles[j]->GetTeam() == Projectile::Team::PLAYER_TEAM)
 							{
+								
 
 								//Damage Enemy
 
 								enemies[i]->health->TakeDamage(projectiles[j]->GetDamage());
+
+								
+
+
 
 								//Destroy projectile
 
@@ -949,6 +957,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 								j--;
 
 								std::cout << "Projectile collided with enemy" << std::endl;
+
+								
 
 							
 
@@ -964,6 +974,12 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					if (!enemies[i]->health->IsAlive())
 					{
+
+						//Spawn explosion
+
+						explosions.push_back(new Explosion(renderer, (char*)"ExplosionSheet.bmp", enemies[i]->GetX(), enemies[i]->GetY(), 480, 60, 8, 0.5f, enemies[i]->GetW() / 32));
+
+
 						delete enemies[i]; //free up space
 						enemies.erase(enemies.begin() + i); //remove index
 						i--;
@@ -997,7 +1013,17 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 					}
 				}
 
+				//REMOVE EXPLOSIONS AFTER ANIMATION PLAYS
 
+				for (int i = 0; i < explosions.size(); i++)
+				{
+					if (explosions[i]->IsDone())
+					{
+						delete explosions[i];
+						explosions.erase(explosions.begin() + i);
+						i--;
+					}
+				}
 
 
 
@@ -1074,6 +1100,15 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 			}
 
+			//DRAW EXPLOSIONS
+
+
+			for (unsigned int i = 0; i < explosions.size(); i++)
+			{
+				explosions[i]->DrawAnimation(deltaTime);
+
+			}
+
 			//DRAW TEXT
 
 			healthText->DrawText();
@@ -1139,6 +1174,11 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		for (int i = 0; i < bosses.size(); i++)
 		{
 			delete bosses[i];
+		}
+
+		for (int i = 0; i < explosions.size(); i++)
+		{
+			delete explosions[i];
 		}
 
 		//Delete Textboxes
