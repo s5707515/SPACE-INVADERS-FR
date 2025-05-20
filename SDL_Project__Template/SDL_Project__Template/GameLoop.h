@@ -11,7 +11,9 @@ enum Phase
 
 	BOSS_WAVE,
 
-	GAME_OVER
+	GAME_OVER,
+
+	WAIT_TIME
 
 };
 

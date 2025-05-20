@@ -524,6 +524,11 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		float enemyFireRate = 5.0f;
 
 
+		float gameOverDelay = 3.0f;
+
+		float timeSinceGameOver = 0.0f;
+
+
 		while (!quit)
 		{
 			while (SDL_PollEvent(&event))
@@ -769,6 +774,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					if (!bosses[i]->health->IsAlive())
 					{
+
+						explosions.push_back(new Explosion(renderer, (char*)"ExplosionSheet.bmp", bosses[i]->GetX() + 20, bosses[i]->GetY() - 100, 480, 60, 8, 1.0f, 12));
 						delete bosses[i]; //free up space
 						bosses.erase(bosses.begin() + i); //remove index
 						i--;
@@ -780,9 +787,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						gameManager->IncrementScore(300);
 
 
-						//GET VICTORY SCREEN
+						//Allow boss death to play
 
-						phase = GAME_OVER;
+						phase = WAIT_TIME;
 
 						
 
@@ -1031,14 +1038,29 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				if (!player->health->IsAlive())
 				{
-					phase = GAME_OVER;
+					phase = WAIT_TIME;
 
 					deathSFX->PlaySound();
+
+					
+					explosions.push_back(new Explosion(renderer, (char*)"ExplosionSheet.bmp", player->GetX()-30, player->GetY() - 100, 480, 60, 8, 1.0f, 3));
 
 				}
 
 			}
 
+
+			if (phase == WAIT_TIME)
+			{
+				if (timeSinceGameOver > gameOverDelay)
+				{
+					phase = GAME_OVER;
+				}
+				else
+				{
+					timeSinceGameOver += deltaTime;
+				}
+			}
 
 
 
@@ -1075,8 +1097,12 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 			//DRAW SPRITES
 
+			if (player->health->IsAlive())
+			{
+				player->DrawSprite();
+			}
 
-			player->DrawSprite();
+			
 
 			for (unsigned int i = 0; i < bosses.size(); i++)
 			{
@@ -1143,7 +1169,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				GOScoreText->DrawText();
 				GORetryText->DrawText();
 				GOMenuText->DrawText();
-
+				
 			}
 			//Present Render each Frame
 
