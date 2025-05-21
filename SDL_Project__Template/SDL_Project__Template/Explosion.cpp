@@ -24,7 +24,7 @@ void Explosion::DrawAnimation(float _deltaTime)
 	{
 		currentTime += _deltaTime;
 
-		if (currentTime > frameTime)
+		if (currentTime > frameTime) //Change frame after a certain amount of time
 		{
 			currentFrame++;
 
@@ -34,17 +34,19 @@ void Explosion::DrawAnimation(float _deltaTime)
 
 	if (currentFrame == numFrames)
 	{
-		isDone = true;
+		isDone = true; //Animation is complete
 	}
 
 
 	if (!isDone)
 	{
+		//Render specific frame
+
 		SDL_Rect frameRect = { currentFrame * frameWidth, 0, frameWidth, frameHeight };
 
 		SDL_Rect displayRect = { position.x, position.y, frameWidth * scale, frameHeight * scale};
 
-		SDL_RenderCopy(renderer, image, &frameRect, &displayRect); //Draw specific frame
+		SDL_RenderCopy(renderer, image, &frameRect, &displayRect); 
 	}
 
 	

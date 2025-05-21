@@ -7,6 +7,7 @@
 
 #include <vector>
 
+//Class used to store code which might be needed by muliple classes
 
 class GameManager
 {
@@ -27,7 +28,7 @@ public:
 
 	void CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, Wave* &_wave); //Instantiates a new enemy (Squid / Crab / Octopus)
 
-	void CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, SDL_Rect bossPos);
+	void CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>& _enemies, SDL_Rect bossPos); //Instantiates a new enemy without assigning a phase
 
 	void UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime); //Moves enemies down the screen, destroying them if they hit the bottom
 

@@ -17,11 +17,11 @@ private:
 
 	int speed = 70;
 
-	int leftBorderPos = 0;
+	int leftBorderPos = 0; 
 
-	int rightBorderPos = 800;
+	int rightBorderPos = 800;//Make sure the player can't leave the screen
 
-	float fireRate = 0.5f;
+	float fireRate = 0.5f; //The speed the player fires
 
 	float shotCoolDown = fireRate; //Allow player to shoot straight away
 

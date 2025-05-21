@@ -2,7 +2,7 @@
 
 #include <SDL_mixer.h>
 
-class Music
+class Music //Class for playing background music
 {
 private:
 
@@ -20,7 +20,7 @@ public:
 };
 
 
-class SFX
+class SFX //Class for playing sound effects
 {
 private:
 

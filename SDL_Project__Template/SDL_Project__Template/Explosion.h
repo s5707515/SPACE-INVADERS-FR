@@ -2,27 +2,30 @@
 
 #include "Sprite.h"
 
+//CLASS USED TO DISPLAY ANIMATED SPRITES (IN THIS CASE ONLY EXPLOSIONS)
+
 class Explosion :public Sprite
 {
 private:
 
-	int numFrames;
+	int numFrames; //The number of frames in a spritesheet
 
 	int currentFrame{ 0 };
 
 	int frameWidth;
 
 	int frameHeight;
-	float duration;
+
+	float duration; //How long one cycle of the animation plays
 
 
-	float frameTime;
+	float frameTime; //The time each frame is on screen
 
 	float currentTime{ 0 };
 
-	bool isDone = false;
+	bool isDone = false; //checks if the animation has been completed
 
-	float scale;
+	float scale; //The size of the animation
 
 
 public:
@@ -31,7 +34,7 @@ public:
 
 	~Explosion();
 
-	void DrawAnimation(float _deltaTime);
+	void DrawAnimation(float _deltaTime); //Displays animation to window
 
 	bool IsDone() { return isDone; }
 };

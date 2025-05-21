@@ -1,5 +1,7 @@
 #pragma once
 
+//PROJECTILE CLASS 
+
 #include "Sprite.h"
 
 class Projectile : public Sprite
@@ -33,6 +35,6 @@ private:
 
 	int damage;
 
-	Team team;
+	Team team; //The projectiles alliegance (determines who it can damage)
 
 };

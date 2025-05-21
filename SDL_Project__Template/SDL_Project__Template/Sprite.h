@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 
+//class for displaying sprites to the window (needs to be inherited by all visible objects)
 
 class Sprite
 {

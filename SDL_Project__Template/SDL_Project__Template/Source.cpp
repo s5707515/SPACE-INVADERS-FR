@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
 	if (game != nullptr)
 	{
-		do
+		do //Swap between Game and Menu until quit
 		{
 			game->MainMenu();
 			

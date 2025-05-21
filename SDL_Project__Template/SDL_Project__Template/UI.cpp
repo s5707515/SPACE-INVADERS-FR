@@ -22,7 +22,7 @@ TextBox::TextBox(TTF_Font* _font, char* _text, SDL_Color _colour, SDL_Rect pos, 
 	
 }
 
-void TextBox::ChangeText(const char* _newText)
+void TextBox::ChangeText(const char* _newText) //Alter the text in the textbox
 {
 	text = (char*)_newText;
 
@@ -45,6 +45,9 @@ void TextBox::ChangeText(const char* _newText)
 			SDL_DestroyTexture(textTexture);
 			textTexture = nullptr;
 		}
+
+		//Create new texture
+
 		position.w = txtSurface->w;
 		position.h = txtSurface->h;
 
@@ -64,7 +67,7 @@ void TextBox::ChangeText(const char* _newText)
 }
 
 
-void TextBox::DrawText()
+void TextBox::DrawText() //Render textbox to screen
 {
 	if (visibility)
 	{

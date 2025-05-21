@@ -31,7 +31,7 @@ GameLoop::~GameLoop() //DTOR (Clean up memory)
 	EndGame();
 }
 
-bool GameLoop::SetUpGame()
+bool GameLoop::SetUpGame() //Sets up SDL
 {
 	bool success = true;
 
@@ -123,6 +123,8 @@ bool GameLoop::SetUpGame()
 	}
 	else
 	{
+		//Find WAV files
+
 		Mix_VolumeMusic(40);
 		menuMusic = new Music("Mars.wav");
 		wavesMusic = new Music("Mercury.wav");
@@ -156,7 +158,7 @@ bool GameLoop::SetUpGame()
 	return success;
 }
 
-void GameLoop::EndGame()
+void GameLoop::EndGame() //Clean up code
 {
 
 	//CLOSE FONTS
@@ -202,6 +204,8 @@ void GameLoop::EndGame()
 
 	//QUIT SDL LIBRARIES
 
+	Mix_Quit();
+
 	TTF_Quit();
 
 	SDL_Quit();
@@ -245,7 +249,7 @@ void GameLoop :: MainMenu()
 	//CREATE TEXTBOXES / IMAGES:
 
 
-	//MAIN MENU
+	//MAIN MENU TEXTBOXES
 
 	Sprite* shipImage = new Sprite(renderer, (char*)"SpaceShip.bmp", SCREEN_WIDTH / 2 - 160, 180, 320, 320);
 
@@ -260,7 +264,7 @@ void GameLoop :: MainMenu()
 	TextBox* quitText = new TextBox(font, (char*)"QUIT", red, { SCREEN_WIDTH / 2 - 65, 800, 0,0 }, renderer);
 
 
-	//INSTRUCTIONS MENU
+	//INSTRUCTIONS MENU TEXTBOXES
 
 	TextBox* instrTitleText = new TextBox(bigFont, (char*)"INSTRUCTIONS", white, { 70, 10, 0, 0 }, renderer);
 
@@ -290,14 +294,14 @@ void GameLoop :: MainMenu()
 
 	
 
-	while (!leaveMenu)
+	while (!leaveMenu) //MENU LOOP
 	{
 
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
-				case SDL_QUIT:
+				case SDL_QUIT: //CHECK FOR QUIT
 
 					leaveMenu = true;
 
@@ -305,7 +309,7 @@ void GameLoop :: MainMenu()
 
 					break;
 
-				case SDL_MOUSEBUTTONDOWN:
+				case SDL_MOUSEBUTTONDOWN: //CHECK IF A BUTTON HAS BEEN PRESSED
 
 					int x = event.button.x;
 					int y = event.button.y;
@@ -388,7 +392,7 @@ void GameLoop :: MainMenu()
 		SDL_RenderClear(renderer);
 
 
-		if (menuState == MAIN_MENU)
+		if (menuState == MAIN_MENU) //Draw main menu screen
 		{
 			titleText->DrawText();
 			playGameText->DrawText();
@@ -399,7 +403,7 @@ void GameLoop :: MainMenu()
 
 		}
 
-		if (menuState == INSTRUCTIONS)
+		if (menuState == INSTRUCTIONS) //Draw instruction screen
 		{
 			instrTitleText->DrawText();
 			instructionsParaText->DrawText();
@@ -419,7 +423,7 @@ void GameLoop :: MainMenu()
 	}
 
 
-	//Delete UI Stuff
+	//Delete UI Stuff on quit
 
 	delete shipImage;
 
@@ -440,7 +444,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 
 
-	while (retry)
+	while (retry) //Loop through the game until the player quits
 	{
 
 		wavesMusic->PlayMusic();
@@ -451,9 +455,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		
 		retry = false; //Default to quit
 
-		phase = REGULAR_WAVE;
+		phase = REGULAR_WAVE; //Set phase
 
-
+		//Create objects
 
 		GameManager* gameManager = new GameManager(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -495,36 +499,35 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 		Wave* wave4 = new Wave(4, 16, 1.7);
 
 
-		//Wave* tempWave = new Wave(69, 1, 2);
+		//Wave* tempWave = new Wave(69, 1, 2); 
 
 
 		std::vector<Wave*> waves = { wave1, wave2, wave3, wave4 };
-		//std::vector<Wave*> waves{ tempWave }; //TEMPORARY
+		//std::vector<Wave*> waves{ tempWave }; //TEMPORARY //Used for instantly starting a boss fight
 
 		int wavePointer = 0;
 
 
-		//DELAYS
+		//DELAYS and cooldowns
 
 		float enemyTimer = 0.0f;
 
 		float enemySpawnRate = waves[0]->GetSpawnFrequency();
 
-
-		float bossAttackTimer = 3.0f;
+		float bossAttackTimer = 3.0f; //Boss attack rate
 
 		float bossCooldown = 0;
 
-		float bossInitDelay = 4.0f;
+		float bossInitDelay = 4.0f; //Time between last wave ending and boss wave
 
 		float currentBossDelay = 0;
 
 		float enemyCooldown = 0.0f;
 
-		float enemyFireRate = 5.0f;
+		float enemyFireRate = 5.0f; //Time between enemy projectile shots (varies)
 
 
-		float gameOverDelay = 3.0f;
+		float gameOverDelay = 3.0f; //Time between boss/player dying and game over screen appearing
 
 		float timeSinceGameOver = 0.0f;
 
@@ -535,14 +538,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			{
 				switch (event.type)
 				{
-				case SDL_QUIT:
+				case SDL_QUIT: //Check for quit
 
 					quit = true;
 
 					closeGame = true;
 					break;
 
-				case SDL_MOUSEBUTTONDOWN:
+				case SDL_MOUSEBUTTONDOWN: //Check if UI button pressed
 
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{
@@ -556,7 +559,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 							SDL_Rect retryPos = GORetryText->GetPositionRect();
 							SDL_Rect backPos = GOMenuText->GetPositionRect();
 
-							if (SDL_PointInRect(&mousePos, &retryPos))
+							if (SDL_PointInRect(&mousePos, &retryPos))//Retry pressed
 							{
 								//Reload level
 
@@ -566,7 +569,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 								menu1->PlaySound();
 							}
 
-							if (SDL_PointInRect(&mousePos, &backPos))
+							if (SDL_PointInRect(&mousePos, &backPos))//Back to main meny pressed
 							{
 								//Go back to main menu
 
@@ -592,17 +595,17 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 
 
-			if (phase == REGULAR_WAVE) 	//EXCLUSIVE STUFF FOR REGULAR WAVES
+			if (phase == REGULAR_WAVE) 	//EXCLUSIVE STUFF FOR REGULAR WAVES PHASE
 			{
 
-				//CHECK IF NEW WAVE
+				//CHECK IF A NEW WAVE HAS STARTED
 
 				if (waves[wavePointer]->GetWaveEnd())
 				{
 
-					waveWarningText->ToggleVisibilty(true);
+					waveWarningText->ToggleVisibilty(true); //Display warning text
 
-					if (wavePointer == waves.size() - 1)
+					if (wavePointer == waves.size() - 1)//Check if boss phase is next phase
 					{
 						if (currentBossDelay > bossInitDelay)
 						{
@@ -619,7 +622,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 							bossMusic->PlayMusic(); //PLAY BOSS MUSIC
 
 						}
-						else
+						else //DELAY BETWEEN END OF WAVES AND BOSS WAVE
 						{
 							currentBossDelay += deltaTime;
 
@@ -632,17 +635,11 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 								playWarningOnce = false;
 							}
 							
-							
-
 						}
-
-
-
-
 					}
-					else
+					else //STUFF THAT CHANGES BETWEEN EACH REGULAR WAVE
 					{
-						wavePointer++;
+						wavePointer++; //Go to next wave
 
 						if (waves[wavePointer]->GetWaveNum() % 2 == 0) //Alternate WAVE music each wave
 						{
@@ -653,8 +650,12 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 							wavesMusic->PlayMusic();
 						}
 
+						//Change warning text
+
 						std::string waveTxt = "WAVE " + std::to_string(waves[wavePointer]->GetWaveNum());
 						waveWarningText->ChangeText((char*)waveTxt.c_str());
+
+						//Change enemy spawn rate
 
 						enemySpawnRate = waves[wavePointer]->GetSpawnFrequency();
 
@@ -671,9 +672,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				if (enemyTimer >= enemySpawnRate)
 				{
-					if ((waves[wavePointer]->GetNumberOfEnemiesLeft() - waves[wavePointer]->GetNumberOfEnemiesAlive()) > 0)
+					if ((waves[wavePointer]->GetNumberOfEnemiesLeft() - waves[wavePointer]->GetNumberOfEnemiesAlive()) > 0) //Check wave still needs more enemies to spawn
 					{
-						gameManager->CreateEnemy(renderer, enemies, waves[wavePointer]);
+						gameManager->CreateEnemy(renderer, enemies, waves[wavePointer]); //Spawn enemy
 
 
 					}
@@ -697,7 +698,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				//BOSS ATTACKS
 
-				if (bossCooldown > bossAttackTimer)
+				if (bossCooldown > bossAttackTimer) 
 				{
 					int attackID = (rand() % 4) + 1;
 
@@ -750,9 +751,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 					{
 						if (projectiles[i]->CheckCollision(bosses[j]->GetPosition()))
 						{
-							if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM)
+							if (projectiles[i]->GetTeam() == Projectile::Team::PLAYER_TEAM) //Check projectile is friendly
 							{
-								//Damage Player
+								//Damage Boss
 
 								bosses[j]->health->TakeDamage(projectiles[i]->GetDamage());
 
@@ -774,6 +775,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					if (!bosses[i]->health->IsAlive())
 					{
+						//Delete boss
 
 						explosions.push_back(new Explosion(renderer, (char*)"ExplosionSheet.bmp", bosses[i]->GetX() + 20, bosses[i]->GetY() - 100, 480, 60, 8, 1.0f, 12));
 						delete bosses[i]; //free up space
@@ -787,7 +789,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 						gameManager->IncrementScore(300);
 
 
-						//Allow boss death to play
+						//Allow boss death to play (end game)
 
 						phase = WAIT_TIME;
 
@@ -807,16 +809,20 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					if (enemyCooldown > enemyFireRate)
 					{
+						//Find position of random enemy to spawn projectile (if there is an enemy)
 						int randEnemy = rand() % enemies.size();
 
 						SDL_Rect position = enemies[randEnemy]->GetPosition();
 
 						SDL_Point spawnPos{ position.x + (position.w / 2), position.y + (position.h / 2) };
+
+						//Spawn enemy projectile
+
 						gameManager->CreateProjectile(renderer, projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
 
 						int sfxID = rand() % 2;
 
-						switch (sfxID)
+						switch (sfxID) //Play sound
 						{
 							case 0:
 
@@ -831,9 +837,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 								break;
 						}
 
-						enemyCooldown = 0;
+						enemyCooldown = 0; //refresh cooldown
 
-						enemyFireRate = (rand() % 4) + 1;
+						enemyFireRate = (rand() % 4) + 1; //Randomise fireRate
 
 					}
 				}
@@ -867,7 +873,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				//UPDATE ENEMIES
 
-				for (int i = 0; i < enemies.size(); i++) //Damage player if an enemy hits the bottom of the screen
+				//Damage player if an enemy hits the bottom of the screen
+
+				for (int i = 0; i < enemies.size(); i++) 
 				{
 					if (enemies[i]->GetY() > SCREEN_HEIGHT)
 					{
@@ -894,9 +902,14 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 					{
 						std::cout << "Enemy collided with player. " << std::endl;
 
+						//Delete enemy
+
+
 						delete enemies[i];
 						enemies.erase(enemies.begin() + i);
 						i--;
+
+						//Damage player
 
 						player->health->TakeDamage(1);
 
@@ -994,6 +1007,9 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 						gameManager->IncrementScore(10);
 
+
+						//Play sound
+
 						int soundID = rand() % 3;
 
 						switch (soundID)
@@ -1026,6 +1042,8 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 				{
 					if (explosions[i]->IsDone())
 					{
+						//Delete explosion
+
 						delete explosions[i];
 						explosions.erase(explosions.begin() + i);
 						i--;
@@ -1038,7 +1056,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 				if (!player->health->IsAlive())
 				{
-					phase = WAIT_TIME;
+					phase = WAIT_TIME; //Allow player explosion time to play (ends game)
 
 					deathSFX->PlaySound();
 
@@ -1050,7 +1068,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			}
 
 
-			if (phase == WAIT_TIME)
+			if (phase == WAIT_TIME) //Stall for time
 			{
 				if (timeSinceGameOver > gameOverDelay)
 				{
@@ -1097,6 +1115,16 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 			//DRAW SPRITES
 
+			//DRAW EXPLOSIONS
+
+
+			for (unsigned int i = 0; i < explosions.size(); i++)
+			{
+				explosions[i]->DrawAnimation(deltaTime);
+
+			}
+
+
 			if (player->health->IsAlive())
 			{
 				player->DrawSprite();
@@ -1126,14 +1154,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 
 			}
 
-			//DRAW EXPLOSIONS
-
-
-			for (unsigned int i = 0; i < explosions.size(); i++)
-			{
-				explosions[i]->DrawAnimation(deltaTime);
-
-			}
+			
 
 			//DRAW TEXT
 
@@ -1185,7 +1206,7 @@ void GameLoop::PlayGame() //The Actual GameLoop of the game
 			delete waves[i];
 		}
 
-		//Delete any remaining projectiles, bosses, enemies
+		//Delete any remaining projectiles, bosses, enemies, explosions
 
 		for (int i = 0; i < enemies.size(); i++)
 		{

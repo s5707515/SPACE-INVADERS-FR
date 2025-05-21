@@ -29,7 +29,7 @@ Wave::Wave(int _waveNum, int _numberOfEnemies, float _spawnFrequency)
 
 
 
-void Wave::DecrementNumberOfEnemies()
+void Wave::DecrementNumberOfEnemies() //Alter amount of enemies left in wave
 {
 	numberOfEnemiesLeft--;
 
@@ -37,7 +37,7 @@ void Wave::DecrementNumberOfEnemies()
 
 	if (numberOfEnemiesLeft <= 0)
 	{
-		waveEnd = true;
+		waveEnd = true; //End wave
 	}
 }
 

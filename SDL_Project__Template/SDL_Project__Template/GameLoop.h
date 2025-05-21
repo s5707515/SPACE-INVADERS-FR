@@ -5,7 +5,7 @@
 
 #include "Sounds.h"
 
-enum Phase
+enum Phase //The 4 phases of the game
 {
 	REGULAR_WAVE,
 
@@ -17,14 +17,14 @@ enum Phase
 
 };
 
-enum MenuState
+enum MenuState //The 2 states that the menu can be in
 {
 	MAIN_MENU,
 
 	INSTRUCTIONS
 };
 
-class GameLoop
+class GameLoop //Class used to cycle through the game, frame by frame
 {
 private:
 
@@ -34,7 +34,7 @@ private:
 
 	int SCREEN_HEIGHT = 800;
 
-	bool closeGame = false;
+	bool closeGame = false; //Checks whether to quit the game completely (Ends program when true)
 
 
 	//SDL STUFF
@@ -48,11 +48,11 @@ private:
 
 	//TIME
 
-	Uint32 ticksCount;
+	Uint32 ticksCount; //The current tick count
 
-	float deltaTime;
+	float deltaTime; //The time since last frame, clamped to 0.05
 
-	//TEXT TTF STUFF
+	//TEXT TTF STUFF (fonts and colours)
 
 	TTF_Font* font{ nullptr };
 
@@ -69,7 +69,7 @@ private:
 	SDL_Color black = { 0,0,0 };
 
 
-	//MUSIC STUFF
+	//MUSIC STUFF (background music and SFXs)
 
 	Music* menuMusic{ nullptr };
 
@@ -99,11 +99,11 @@ private:
 
 	SFX* playerDamage{ nullptr };
 
-	//PHASE
+	//Instances of enums.
 
-	Phase phase;
+	Phase phase; //The current phase of the game loop
 
-	MenuState menuState;
+	MenuState menuState; //The current state of the menu
 
 	
 

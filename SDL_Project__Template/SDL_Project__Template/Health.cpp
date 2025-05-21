@@ -12,6 +12,8 @@ Health::Health(int _maxHealth)
 
 void Health::TakeDamage(int _damage)
 {
+	//Damage object
+
 	if (currentHealth < _damage)
 	{
 		currentHealth = 0;

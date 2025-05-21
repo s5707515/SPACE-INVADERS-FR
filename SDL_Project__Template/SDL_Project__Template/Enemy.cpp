@@ -38,7 +38,7 @@ Enemy:: ~Enemy()
 	{
 		if (wave != nullptr)
 		{
-			wave->DecrementNumberOfEnemies();
+			wave->DecrementNumberOfEnemies(); //Decrement wave count when an enemy is killed
 		}
 	}
 }

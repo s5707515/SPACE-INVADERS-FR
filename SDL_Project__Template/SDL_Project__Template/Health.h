@@ -1,5 +1,6 @@
 #pragma once
 
+// Basic health component class. Allows damage to be stored.
 
 class Health
 {

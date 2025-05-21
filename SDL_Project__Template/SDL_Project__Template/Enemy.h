@@ -1,6 +1,6 @@
 #pragma once
 
-//CLASS FOR ALL ENEMIES
+//CLASS FOR ALL ENEMY UNITS
 
 #include "Sprite.h"
 
@@ -18,7 +18,7 @@ private:
 
 	Wave* wave{ nullptr };
 
-	bool partOfWave;
+	bool partOfWave; //Whether to enemy is part of a wave or not
 
 
 public:

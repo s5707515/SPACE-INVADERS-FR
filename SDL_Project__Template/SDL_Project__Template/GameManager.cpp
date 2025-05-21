@@ -11,13 +11,13 @@ void GameManager::CreateProjectile(SDL_Renderer* renderer, std::vector<Projectil
 
 	switch (team)
 	{
-		case Projectile::Team::PLAYER_TEAM :
+		case Projectile::Team::PLAYER_TEAM : //Player projectile
 
 			_projectiles.push_back(new Projectile(renderer, (char*)"Projectile1.bmp", _spawnPos.x, _spawnPos.y, 8, 32, 75, Projectile::Team::PLAYER_TEAM,1));
 
 			break;
 
-		case Projectile::Team::ENEMY_TEAM:
+		case Projectile::Team::ENEMY_TEAM: //Enemy projectile
 
 			_projectiles.push_back(new Projectile(renderer, (char*)"Projectile2.bmp", _spawnPos.x, _spawnPos.y, 24, 24, 75, Projectile::Team::ENEMY_TEAM, 1));
 
@@ -36,9 +36,9 @@ void GameManager::UpdateProjectiles(std::vector<Projectile*>& _projectiles, floa
 {
 	for (unsigned int i = 0; i < _projectiles.size(); i++)
 	{
-		_projectiles[i]->MoveProjectile(_deltaTime);
+		_projectiles[i]->MoveProjectile(_deltaTime); //Move projectiles
 
-		if (_projectiles[i]->GetY() < 0 || _projectiles[i]->GetY() > SCREEN_HEIGHT)
+		if (_projectiles[i]->GetY() < 0 || _projectiles[i]->GetY() > SCREEN_HEIGHT) //Destroy offscreen projectiles (above or below)
 		{
 			std::cout << "Deleted Projectile!" << std::endl;
 
@@ -59,6 +59,8 @@ void GameManager::CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>
 	bool freeSpace = true;
 
 	int xPos = 0;
+
+	//Find spawn pos
 
 	do
 	{
@@ -81,12 +83,12 @@ void GameManager::CreateEnemyForBoss(SDL_Renderer* renderer, std::vector<Enemy*>
 	} while (!freeSpace);
 
 
-
+	//SPAWN ENEMY
 
 
 	switch (enemyID)
 	{
-		//I dont want squids to spawn because they're too quick to react too in BOSS PHASE
+		//I dont want squids to spawn because they're too quick to react too in BOSS PHASE (with reduced distance)
 
 	case 0:
 		//SPAWN CRAB
@@ -114,6 +116,8 @@ void GameManager::CreateEnemy(SDL_Renderer* renderer, std::vector<Enemy*>& _enem
 	bool freeSpace = true;
 
 	int xPos = 0;
+
+	//Find spawn pos
 
 	do
 	{
@@ -182,7 +186,7 @@ void GameManager::UpdateEnemies(std::vector<Enemy*>& _enemies, float _deltaTime)
 	}
 }
 
-void GameManager::IncrementScore(int _points)
+void GameManager::IncrementScore(int _points) //Update score
 {
 	score += _points;
 }

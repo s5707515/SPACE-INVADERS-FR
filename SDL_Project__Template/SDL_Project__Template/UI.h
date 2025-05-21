@@ -2,13 +2,13 @@
 
 #include <SDL_ttf.h>
 
-
+//CLass for displaying text to the screen
 
 class TextBox
 {
 private:
 
-	TTF_Font* font{ nullptr };
+	TTF_Font* font{ nullptr }; //The font type
 
 	SDL_Color colour;
 
@@ -16,11 +16,11 @@ private:
 
 	SDL_Renderer* renderer{ nullptr };
 
-	SDL_Texture* textTexture;
+	SDL_Texture* textTexture; 
 
-	char* text;
+	char* text; //The text that will be displayed
 
-	bool visibility;
+	bool visibility; //Determines if the textbox is on screen
 
 public:
 
@@ -28,11 +28,11 @@ public:
 
 	~TextBox() {}; //DTOR
 
-	void ChangeText(const char* _newText);
+	void ChangeText(const char* _newText); //Alter the text in the textbox
 
-	void DrawText();
+	void DrawText(); //Make the text visible to the window
 
-	void ToggleVisibilty(bool _visibility);
+	void ToggleVisibilty(bool _visibility); //Change whether text can or cant be seen
 
 	SDL_Rect GetPositionRect() { return position; }
 };

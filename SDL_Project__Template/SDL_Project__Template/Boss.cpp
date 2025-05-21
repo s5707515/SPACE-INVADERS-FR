@@ -22,7 +22,7 @@ Boss::~Boss()
 
 void Boss::MoveBoss(float _deltaTime)
 {
-	if (truePos.y < stopHeight)
+	if (truePos.y < stopHeight) //Move boss aslong as it hasn't reach minimum height
 	{
 		truePos.y += speed * _deltaTime * 10;
 	}
@@ -38,7 +38,7 @@ void Boss::FireBarrage(std::vector<Projectile*>& _projectiles, int _numProjectil
 
 	if (alternateShot)
 	{
-		for (int i = 0; i < _numProjectiles - 1; i++)
+		for (int i = 0; i < _numProjectiles - 1; i++) //Spawn n-1 projectiles with an offset
 		{
 			spawnPos.x = GetX() + (i * distanceBetweenShots) + (0.5 * distanceBetweenShots);
 			spawnPos.y = GetY() + GetH();
@@ -46,11 +46,11 @@ void Boss::FireBarrage(std::vector<Projectile*>& _projectiles, int _numProjectil
 			gameManager->CreateProjectile(renderer, _projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
 		}
 
-		alternateShot = false;
+		alternateShot = false;//Toggle aternateShot
 	}
 	else
 	{
-		for (int i = 0; i < _numProjectiles; i++)
+		for (int i = 0; i < _numProjectiles; i++)//Spawn n projectiles
 		{
 
 			spawnPos.x = GetX() + (i * distanceBetweenShots);
@@ -59,14 +59,14 @@ void Boss::FireBarrage(std::vector<Projectile*>& _projectiles, int _numProjectil
 			gameManager->CreateProjectile(renderer, _projectiles, Projectile::Team::ENEMY_TEAM, spawnPos);
 		}
 
-		alternateShot = true;
+		alternateShot = true; //Toggle aternateShot
 	}
 	
 }
 
 void Boss::BackUpCall(std::vector<Enemy*>& _enemies, int _numEnemies)
 {
-	for (int i = 0; i < _numEnemies; i++)
+	for (int i = 0; i < _numEnemies; i++) //Spawn n enemies somewhere below the boss
 	{
 		gameManager->CreateEnemyForBoss(renderer, _enemies, position);
 	}
